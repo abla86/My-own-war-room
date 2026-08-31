@@ -57,7 +57,7 @@ function payloadString(rawPayload: string | Record<string, unknown>): string {
  * existing preset family deterministically. This is an input compatibility
  * bridge, not SecurityEngine decision logic.
  */
-function classifyPayload(payload: string): Attack['category'] {
+function classifyPayload(payload: string): AttackVector['category'] {
   const p = payload.toLowerCase();
 
   if (p.includes('worm_sig') || p.includes('propagate') || p.includes('copy yourself') || p.includes('repeat this')) {
