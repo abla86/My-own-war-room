@@ -319,12 +319,12 @@ export function App() {
         securityDefenses
       );
 
-      setSecurityNodes(simulation.nodes);
-      setSecurityEdges(simulation.edges);
+      setSecurityNodes(simulation.topology.nodes);
+      setSecurityEdges(simulation.topology.edges);
       setSecurityDefenses(simulation.defenses);
       setLastSecuritySimulation(simulation.result);
 
-      const evaluation = simulation.evaluation;
+      const evaluation = simulation.legacyEvaluation;
 
       playRadarPing();
       const countermeasureSound =
