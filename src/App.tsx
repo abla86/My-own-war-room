@@ -401,7 +401,9 @@ export function App() {
 
   // Attack simulator triggers
   const handleFireAttack = async (vectorId: number, customPayload?: string, customIp?: string) => {
-    const vector = ATTACK_VECTORS.find((v) => v.id === vectorId);
+    const vector = vectorId === 7
+      ? { ...ATTACK_VECTORS[1], id: 7, name: 'Custom Payload', category: 'CUSTOM' as const }
+      : ATTACK_VECTORS.find((v) => v.id === vectorId);
     if (!vector) return;
 
     const ip = customIp || `198.51.100.${Math.floor(Math.random() * 200) + 10}`;
