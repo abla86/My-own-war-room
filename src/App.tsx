@@ -12,6 +12,7 @@ import { LiveConsole } from './components/LiveConsole';
 import { ActiveThreatModal } from './components/ActiveThreatModal';
 import { ExportReportModal } from './components/ExportReportModal';
 import { SyncDefinitionsModal } from './components/SyncDefinitionsModal';
+import { SecurityEngineStatusPanel } from './components/SecurityEngineStatusPanel';
 
 import { 
   SystemStats, 
@@ -697,6 +698,7 @@ export function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+        <SecurityEngineStatusPanel result={lastSecuritySimulation} defenses={securityDefenses} />
         {/* Dynamic View by Tab */}
         {activeTab === 'radar' && (
           <RadarView
