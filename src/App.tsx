@@ -306,8 +306,7 @@ export function App() {
 
   // Authoritative SecurityEngine integration. WarRoom only renders the engine's decisions.
   const processAttack = useCallback(
-    async (rawPayload: string | Record<string, unknown>, attackerIp: string, showModal: boolean = false) => {
-      const vector = ATTACK_VECTORS.find((v) => v.id === (typeof rawPayload === 'string' ? 7 : 0)) || ATTACK_VECTORS[0];
+    async (vector: (typeof ATTACK_VECTORS)[number], rawPayload: string | Record<string, unknown>, attackerIp: string, showModal: boolean = false) => {
       const payload = typeof rawPayload === 'string' ? rawPayload : JSON.stringify(rawPayload);
       const simulation = runWarRoomSimulation(vector, payload, attackerIp, {
         nodes: engineNodes,
@@ -407,7 +406,7 @@ export function App() {
 
     const ip = customIp || `198.51.100.${Math.floor(Math.random() * 200) + 10}`;
     const payload = customPayload || JSON.stringify(vector.payload);
-    await processAttack(payload, ip, true);
+    await processAttack(vector, payload, ip, true);
   };
 
   // Swarm test
@@ -420,7 +419,7 @@ export function App() {
       const randomIp = `185.${Math.floor(Math.random() * 200)}.${Math.floor(Math.random() * 255)}.${Math.floor(
         Math.random() * 255
       )}`;
-      await processAttack(JSON.stringify(randomVector.payload), randomIp, false);
+      await processAttack(randomVector, JSON.stringify(randomVector.payload), randomIp, false);
       await new Promise((r) => setTimeout(r, 220));
     }
 
@@ -435,7 +434,7 @@ export function App() {
 
     for (const vector of ATTACK_VECTORS) {
       const dummyIp = `103.225.17.${Math.floor(Math.random() * 250) + 1}`;
-      await processAttack(JSON.stringify(vector.payload), dummyIp, false);
+      await processAttack(vector, JSON.stringify(vector.payload), dummyIp, false);
       await new Promise((r) => setTimeout(r, 400));
     }
 
@@ -654,7 +653,7 @@ export function App() {
           <GodModeBattleArena
             stats={stats}
             onUpdateStats={setStats}
-            onTriggerAttackSample={(payload, ip) => processAttack(payload, ip, true)}
+            onTriggerAttackSample={(payload, ip) => processAttack(ATTACK_VECTORS[4], payload, ip, true)}
           />
         )}
 
