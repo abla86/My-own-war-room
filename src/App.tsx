@@ -327,7 +327,13 @@ export function App() {
       const evaluation = simulation.evaluation;
 
       playRadarPing();
-      playCountermeasureSound(evaluation.status === 'PROBING' ? 'JAMMED' : evaluation.status);
+      const countermeasureSound =
+        evaluation.status === 'ISOLATED'
+          ? 'ISOLATED'
+          : evaluation.status === 'LOOPED'
+          ? 'LOOPED'
+          : 'JAMMED';
+      playCountermeasureSound(countermeasureSound);
 
       addLog(
         simulation.result.finalVerdict === 'BREACHED' ? 'DANGER' : 'WARN',
