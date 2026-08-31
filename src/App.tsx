@@ -325,7 +325,7 @@ export function App() {
       const riskLevel = simulation.attack.severity;
 
       playRadarPing();
-      playCountermeasureSound(status);
+      playCountermeasureSound(status === 'ISOLATED' ? 'ISOLATED' : status === 'LOOPED' ? 'LOOPED' : 'JAMMED');
 
       addLog(
         riskLevel === 'CRITICAL' ? 'DANGER' : verdict === 'ALLOW' ? 'WARN' : 'COUNTERMEASURE',
