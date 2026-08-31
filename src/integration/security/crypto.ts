@@ -1,0 +1,1 @@
+export function syncHash(data:string|object):string{const text=typeof data==='string'?data:JSON.stringify(data);let hash=5381;for(let i=0;i<text.length;i++)hash=(hash*33)^text.charCodeAt(i);return (hash>>>0).toString(16).padStart(8,'0')+text.length.toString(16);}
