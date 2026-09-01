@@ -109,9 +109,9 @@ function classifyPayload(payload: string): AttackVector['category'] {
   return 'context_weaving';
 }
 
-function buildAttack(rawPayload: string | Record<string, unknown>): AttackVector {
+function buildAttack(rawPayload: string | Record<string, unknown>, categoryOverride?: AttackVector['category']): AttackVector {
   const payload = payloadString(rawPayload);
-  const category = classifyPayload(payload);
+  const category = categoryOverride ?? classifyPayload(payload);
   const preset = PRESET_ATTACKS.find((candidate) => candidate.category === category) ?? PRESET_ATTACKS[0];
 
   return {
@@ -138,8 +138,9 @@ export function runWarRoomSecuritySimulation(
   nodes: AgentNode[],
   edges: NetworkEdge[],
   defenses: DefenseModule[],
+  categoryOverride?: AttackVector['category'],
 ): WarRoomAdapterOutput {
-  const attack = buildAttack(rawPayload);
+  const attack = buildAttack(rawPayload, categoryOverride);
 
   const {
     result,
