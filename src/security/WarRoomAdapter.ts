@@ -10,14 +10,14 @@ import type {
 } from './types';
 import { SecurityEngine } from './SecurityEngine';
 import { PRESET_ATTACKS } from './defaults';
+import { calculateShannonEntropy } from '../utils/crypto';
 
 /**
  * WarRoom presentation adapter.
  *
- * SecurityEngine remains authoritative. This layer only maps engine output
- * into structures consumed by the existing WarRoom. Legacy forensic fields
- * that have no SecurityEngine source remain explicitly outside the engine
- * contract and are supplied by the existing WarRoom presentation path.
+ * SecurityEngine remains authoritative. This layer maps engine output into
+ * WarRoom presentation data. Legacy-only forensic values are kept explicitly
+ * under legacyEvaluation and are not represented as SecurityEngine output.
  */
 export interface WarRoomAdapterOutput {
   result: SimulationResult;
@@ -40,6 +40,7 @@ export interface WarRoomAdapterOutput {
   legacyEvaluation: {
     threat: string;
     countermeasure: string;
+    entropy: number;
     payloadStr: string;
     riskLevel: LegacyAttackVector['riskLevel'];
     status: 'PROBING' | 'TRAPPED' | 'JAMMED' | 'LOOPED' | 'ISOLATED';
@@ -126,6 +127,7 @@ export function runWarRoomSecuritySimulation(
   const lastStep = result.steps[result.steps.length - 1];
   const reason = lastStep?.reason ?? 'SecurityEngine evaluation completed.';
   const payload = payloadString(rawPayload);
+  const legacyEntropy = calculateShannonEntropy(payload);
 
   return {
     attack,
@@ -147,6 +149,7 @@ export function runWarRoomSecuritySimulation(
     legacyEvaluation: {
       threat: attack.name,
       countermeasure: reason,
+      entropy: legacyEntropy,
       payloadStr: payload,
       riskLevel: attack.severity,
       status: statusFor(attack.category, result.finalVerdict),
