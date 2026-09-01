@@ -31,6 +31,7 @@ assert.ok(Array.isArray(simulation.topology.edges));
 assert.ok(Array.isArray(simulation.defenses));
 assert.ok(Array.isArray(simulation.timelineView));
 assert.ok(Array.isArray(simulation.auditView));
+assert.ok(simulation.auditView.every((entry) => typeof entry.id === 'string' && typeof entry.timestamp === 'string' && typeof entry.level === 'string' && typeof entry.message === 'string'));
 assert.ok(Array.isArray(simulation.defenseView));
 assert.equal(simulation.timelineView.length, simulation.result.steps.length);
 assert.equal(simulation.defenses.length, simulation.defenseView.length);
@@ -43,7 +44,9 @@ assert.equal('entropy' in simulation.result, false);
 assert.equal(simulation.topology.nodes.length, nodes.length);
 assert.equal(simulation.topology.edges.length, edges.length);
 assert.equal(simulation.defenseView, simulation.defenses);
-assert.equal(simulation.auditView.length, simulation.result.steps.length >= 0 ? simulation.auditView.length : 0);
+assert.ok(simulation.defenses.every((defense) => typeof defense.id === 'string' && typeof defense.type === 'string'));
+assert.equal(simulation.verdictView.metrics, simulation.result.metrics);
+assert.equal(simulation.auditView.length, simulation.auditView.filter((entry) => entry.message.length > 0).length);
 
 const after = JSON.stringify({ nodes, edges, defenses });
 assert.equal(after, before, 'caller-owned state was mutated');
