@@ -12,6 +12,11 @@ import { LiveConsole } from './components/LiveConsole';
 import { ActiveThreatModal } from './components/ActiveThreatModal';
 import { ExportReportModal } from './components/ExportReportModal';
 import { SyncDefinitionsModal } from './components/SyncDefinitionsModal';
+import { SecurityEngineStatusPanel } from './components/SecurityEngineStatusPanel';
+import WarRoomDashboardFull from './components/WarRoomDashboardFull';
+import WarRoomAttackBuilder, { WarRoomAttackInput } from './components/WarRoomAttackBuilder';
+import WarRoomDefenseConfigurator from './components/WarRoomDefenseConfigurator';
+import WarRoomTopologyEditor from './components/WarRoomTopologyEditor';
 
 import { 
   SystemStats, 
@@ -41,6 +46,11 @@ import {
   isSoundEnabled 
 } from './utils/audio';
 import { downloadReportFile } from './utils/exporters';
+import { runWarRoomSecuritySimulation } from './security/WarRoomSecurityAdapter';
+import { INITIAL_NODES, INITIAL_EDGES, INITIAL_DEFENSES } from './security/defaults';
+import type { AgentNode, NetworkEdge, DefenseModule, SimulationResult } from './security/types';
+import type { WarRoomAdapterOutput } from './security/WarRoomAdapter';
+
 
 export function App() {
   const [activeTab, setActiveTab] = useState<string>('radar');
@@ -129,6 +139,14 @@ export function App() {
 
   // Blacklisted IPs
   const [blacklist, setBlacklist] = useState<BlacklistedIp[]>(INITIAL_BLACKLIST);
+
+  // Authoritative SecurityEngine state. WarRoom presentation state remains separate.
+  const [securityNodes, setSecurityNodes] = useState<AgentNode[]>(INITIAL_NODES);
+  const [securityEdges, setSecurityEdges] = useState<NetworkEdge[]>(INITIAL_EDGES);
+  const [securityDefenses, setSecurityDefenses] = useState<DefenseModule[]>(INITIAL_DEFENSES);
+  const [lastSecuritySimulation, setLastSecuritySimulation] = useState<SimulationResult | null>(null);
+  const [lastWarRoomSimulation, setLastWarRoomSimulation] = useState<WarRoomAdapterOutput | null>(null);
+  const [warRoomAttack, setWarRoomAttack] = useState<WarRoomAttackInput>({ vector: 'context_weaving', payload: 'Remember token A and assemble the request.' });
 
   // Console Logs
   const [logs, setLogs] = useState<ConsoleLogMessage[]>([
@@ -298,32 +316,51 @@ export function App() {
     }, 1200);
   }, [isSyncingDefinitions, addLog]);
 
-  // Central Threat Evaluation and Autonomous Reaction
+  // Authoritative security decision path: UI payload -> SecurityEngine -> WarRoom presentation.
   const processAttack = useCallback(
-    async (rawPayload: string | Record<string, unknown>, attackerIp: string, showModal: boolean = false) => {
-      const evaluation = evaluateThreat(attackerIp, rawPayload);
+    async (rawPayload: string | Record<string, unknown>, attackerIp: string, showModal: boolean = false, attackCategory?: WarRoomAttackInput['vector']) => {
+      const simulation = runWarRoomSecuritySimulation(
+        rawPayload,
+        securityNodes,
+        securityEdges,
+        securityDefenses,
+        attackCategory
+      );
 
-      // Play tactical audio
+      setLastWarRoomSimulation(simulation);
+      setSecurityNodes(simulation.topology.nodes);
+      setSecurityEdges(simulation.topology.edges);
+      setSecurityDefenses(simulation.defenses);
+      setLastSecuritySimulation(simulation.result);
+      setLogs((prev) => [...simulation.auditView, ...prev].slice(0, 200));
+
+      const evaluation = simulation.legacyEvaluation;
+
       playRadarPing();
-      playCountermeasureSound(evaluation.status);
+      const countermeasureSound =
+        evaluation.status === 'ISOLATED'
+          ? 'ISOLATED'
+          : evaluation.status === 'LOOPED'
+          ? 'LOOPED'
+          : 'JAMMED';
+      playCountermeasureSound(countermeasureSound);
 
-      // Log event
       addLog(
-        evaluation.riskLevel === 'CRITICAL' ? 'DANGER' : 'WARN',
-        `Trussel oppdaget fra ${attackerIp}: ${evaluation.threat} (Entropi: ${evaluation.entropy.toFixed(2)})`,
+        simulation.result.finalVerdict === 'BREACHED' ? 'DANGER' : 'WARN',
+        `SecurityEngine: ${simulation.attack.name} fra ${attackerIp} — ${simulation.result.finalVerdict} (entropi: ${evaluation.entropy.toFixed(2)})`,
         attackerIp
       );
 
-      // Log countermeasure
       addLog(
-        'COUNTERMEASURE',
-        `Mottiltak iverksatt: ${evaluation.countermeasure}`,
+        simulation.result.finalVerdict === 'BREACHED' ? 'DANGER' : 'COUNTERMEASURE',
+        simulation.result.steps[simulation.result.steps.length - 1]?.reason ?? 'SecurityEngine evaluation completed.',
         attackerIp
       );
 
-      // Compute cryptographic SHA-256 for this block
       const lastBlock = chain[0];
-      const prevHash = lastBlock ? lastBlock.currentHash : '00000000000000000000000000000000';
+      const prevHash = lastBlock
+        ? lastBlock.currentHash
+        : '00000000000000000000000000000000';
       const newId = chain.length + 1;
       const now = new Date();
       const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
@@ -339,21 +376,23 @@ export function App() {
         threatType: evaluation.threat,
         threatLevel: evaluation.riskLevel,
         payload: payloadString,
-        entropy: parseFloat(evaluation.entropy.toFixed(2)),
+        entropy: Number(evaluation.entropy.toFixed(2)),
         counterMeasure: evaluation.countermeasure,
-        counterMeasureCode: evaluation.status === 'ISOLATED' ? 'BLACKOUT_ISOLATION' : evaluation.status === 'LOOPED' ? 'PHANTOM_LOOP' : 'MIRROR_JAM',
+        counterMeasureCode:
+          simulation.result.finalVerdict === 'BREACHED'
+            ? 'BREACH_DETECTED'
+            : evaluation.status === 'ISOLATED'
+            ? 'BLACKOUT_ISOLATION'
+            : evaluation.status === 'LOOPED'
+            ? 'PHANTOM_LOOP'
+            : 'MIRROR_JAM',
         previousHash: prevHash,
-        currentHash: currentHash,
+        currentHash,
       };
 
-      if (showModal) {
-        setActiveModalBlock(newBlock);
-      }
-
-      // Append to WORM Immutable Blockchain-style Forensic Chain
+      if (showModal) setActiveModalBlock(newBlock);
       setChain((prevChain) => [newBlock, ...prevChain]);
 
-      // Update Blacklist
       setBlacklist((prevBlacklist) => {
         const existing = prevBlacklist.find((item) => item.ip === attackerIp);
         if (existing) {
@@ -362,29 +401,28 @@ export function App() {
               ? {
                   ...item,
                   attemptsBlocked: item.attemptsBlocked + 1,
-                  lastSeen: new Date().toLocaleTimeString(),
+                  blockedAt: new Date().toLocaleTimeString(),
                 }
               : item
           );
-        } else {
-          return [
-            {
-              ip: attackerIp,
-              reason: evaluation.threat,
-              blockedAt: new Date().toLocaleTimeString(),
-              threatLevel: evaluation.riskLevel,
-              attemptsBlocked: 1,
-              country: 'UNKNOWN / PROXY',
-            },
-            ...prevBlacklist,
-          ];
         }
+        return [
+          {
+            ip: attackerIp,
+            reason: evaluation.threat,
+            blockedAt: new Date().toLocaleTimeString(),
+            threatLevel: evaluation.riskLevel,
+            attemptsBlocked: 1,
+            country: 'UNKNOWN / PROXY',
+          },
+          ...prevBlacklist,
+        ];
       });
 
-      // Update System Stats
       setStats((prev) => {
         const nextTotal = prev.totalThreatsBlocked + 1;
         const history = [...(prev.threatHistory60Min || [])];
+
         if (history.length > 0) {
           const lastIdx = history.length - 1;
           const currentPoint = history[lastIdx];
@@ -392,65 +430,67 @@ export function App() {
             ...currentPoint,
             totalThreatsBlocked: nextTotal,
             threatsPerMinute: currentPoint.threatsPerMinute + 1,
-            honeypotTrapped: evaluation.status !== 'ISOLATED' ? currentPoint.honeypotTrapped + 1 : currentPoint.honeypotTrapped,
+            honeypotTrapped:
+              simulation.result.finalVerdict === 'BREACHED'
+                ? currentPoint.honeypotTrapped
+                : currentPoint.honeypotTrapped + 1,
             encryptedProgramDataKb: currentPoint.encryptedProgramDataKb + 1,
             encryptedOutdataPackets: currentPoint.encryptedOutdataPackets + 3,
-            averageEntropy: parseFloat(((currentPoint.averageEntropy + evaluation.entropy) / 2).toFixed(2)),
+            averageEntropy: Number(((currentPoint.averageEntropy + evaluation.entropy) / 2).toFixed(2)),
           };
         }
 
         const prevEnc = prev.encryption || INITIAL_ENCRYPTION_STATUS;
-        const nextEnc = {
-          ...prevEnc,
-          programData: {
-            ...prevEnc.programData,
-            encryptedBlocksCount: prevEnc.programData.encryptedBlocksCount + 1,
-          },
-          outData: {
-            ...prevEnc.outData,
-            encryptedPacketsCount: prevEnc.outData.encryptedPacketsCount + 3,
-            lastEgressEncryptedAt: new Date().toLocaleTimeString(),
-          },
-        };
-
         return {
           ...prev,
+          status: simulation.result.finalVerdict === 'BREACHED' ? 'DEFENDING' : prev.status,
           totalThreatsBlocked: nextTotal,
           honeypotTrappedCount:
-            evaluation.status === 'LOOPED' || evaluation.status === 'JAMMED'
-              ? prev.honeypotTrappedCount + 1
-              : prev.honeypotTrappedCount,
+            simulation.result.finalVerdict === 'BREACHED'
+              ? prev.honeypotTrappedCount
+              : prev.honeypotTrappedCount + 1,
           entropyScansCount: prev.entropyScansCount + 1,
           dbSizeBytes: prev.dbSizeBytes + 512,
           walSizeBytes: prev.walSizeBytes + 256,
-          lastBreachTimestamp: new Date().toISOString(),
+          lastBreachTimestamp:
+            simulation.result.finalVerdict === 'BREACHED'
+              ? new Date().toISOString()
+              : prev.lastBreachTimestamp,
           threatHistory60Min: history,
-          encryption: nextEnc,
+          encryption: {
+            ...prevEnc,
+            programData: {
+              ...prevEnc.programData,
+              encryptedBlocksCount: prevEnc.programData.encryptedBlocksCount + 1,
+            },
+            outData: {
+              ...prevEnc.outData,
+              encryptedPacketsCount: prevEnc.outData.encryptedPacketsCount + 3,
+              lastEgressEncryptedAt: new Date().toLocaleTimeString(),
+            },
+          },
         };
       });
 
-      // Update Radar Blips
       setBlips((prevBlips) => {
         const angle = Math.random() * Math.PI * 2;
-        const distance = 20 + Math.random() * 25; // radius percent
+        const distance = 20 + Math.random() * 25;
         const x = 50 + Math.cos(angle) * distance;
         const y = 50 + Math.sin(angle) * distance;
-
         const newBlip: RadarBlip = {
           id: `blip-${Date.now()}-${Math.random()}`,
           x: Math.max(10, Math.min(90, x)),
           y: Math.max(10, Math.min(90, y)),
           ip: attackerIp,
           threat: evaluation.threat,
-          status: evaluation.status,
+          status: evaluation.status === 'PROBING' ? 'PROBING' : evaluation.status,
           timestamp: Date.now(),
           entropy: evaluation.entropy,
         };
-
         return [newBlip, ...prevBlips.slice(0, 7)];
       });
     },
-    [addLog, chain]
+    [addLog, chain, securityNodes, securityEdges, securityDefenses]
   );
 
   // Attack simulator triggers
@@ -674,6 +714,20 @@ export function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+        <SecurityEngineStatusPanel result={lastSecuritySimulation} defenses={securityDefenses} />
+        <WarRoomAttackBuilder
+          attack={warRoomAttack}
+          setAttack={setWarRoomAttack}
+          onRun={() => processAttack(warRoomAttack.payload, '198.51.100.10', false, warRoomAttack.vector)}
+        />
+        <WarRoomDefenseConfigurator defenses={securityDefenses} setDefenses={setSecurityDefenses} />
+        <WarRoomTopologyEditor
+          nodes={securityNodes}
+          edges={securityEdges}
+          setNodes={setSecurityNodes}
+          setEdges={setSecurityEdges}
+        />
+        <WarRoomDashboardFull sim={lastWarRoomSimulation} />
         {/* Dynamic View by Tab */}
         {activeTab === 'radar' && (
           <RadarView
