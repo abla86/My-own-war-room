@@ -46,6 +46,16 @@ assert.equal(simulation.topology.edges.length, edges.length);
 assert.equal(simulation.defenseView, simulation.defenses);
 assert.ok(simulation.defenses.every((defense) => typeof defense.id === 'string' && typeof defense.type === 'string'));
 assert.equal(simulation.verdictView.metrics, simulation.result.metrics);
+
+const selectedVectorSimulation = runWarRoomSecuritySimulation(
+  'selected vector verification payload',
+  structuredClone(INITIAL_NODES),
+  structuredClone(INITIAL_EDGES),
+  structuredClone(INITIAL_DEFENSES),
+  'rag_corruption',
+);
+assert.equal(selectedVectorSimulation.attack.category, 'rag_corruption');
+assert.equal(selectedVectorSimulation.attack.payload, 'selected vector verification payload');
 assert.equal(simulation.auditView.length, simulation.auditView.filter((entry) => entry.message.length > 0).length);
 
 const after = JSON.stringify({ nodes, edges, defenses });
