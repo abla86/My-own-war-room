@@ -15,7 +15,17 @@ const simulation = runWarRoomSecuritySimulation(
 );
 
 assert.ok(simulation.result);
+assert.equal(typeof simulation.result.id, 'string');
+assert.equal(typeof simulation.result.finalVerdict, 'string');
+assert.equal(typeof simulation.result.attackName, 'string');
 assert.ok(Array.isArray(simulation.result.steps));
+assert.ok(Array.isArray(simulation.result.nodesInfected));
+assert.ok(Array.isArray(simulation.result.nodesProtected));
+assert.equal(typeof simulation.result.metrics.attackSuccessRate, 'number');
+assert.equal(typeof simulation.result.metrics.driftScore, 'number');
+assert.equal(typeof simulation.result.metrics.poisoningScore, 'number');
+assert.equal(typeof simulation.result.metrics.provenanceRiskIndex, 'number');
+assert.equal(typeof simulation.result.metrics.defenseLatencyMs, 'number');
 assert.ok(Array.isArray(simulation.topology.nodes));
 assert.ok(Array.isArray(simulation.topology.edges));
 assert.ok(Array.isArray(simulation.defenses));
@@ -24,9 +34,16 @@ assert.ok(Array.isArray(simulation.auditView));
 assert.ok(Array.isArray(simulation.defenseView));
 assert.equal(simulation.timelineView.length, simulation.result.steps.length);
 assert.equal(simulation.defenses.length, simulation.defenseView.length);
+assert.equal(simulation.verdictView.verdict, simulation.result.finalVerdict);
+assert.equal(simulation.verdictView.attackName, simulation.result.attackName);
+assert.equal(simulation.timelineView, simulation.result.steps);
 assert.equal(typeof simulation.verdictView.reason, 'string');
 assert.equal(typeof simulation.legacyEvaluation.entropy, 'number');
 assert.equal('entropy' in simulation.result, false);
+assert.equal(simulation.topology.nodes.length, nodes.length);
+assert.equal(simulation.topology.edges.length, edges.length);
+assert.equal(simulation.defenseView, simulation.defenses);
+assert.equal(simulation.auditView.length, simulation.result.steps.length >= 0 ? simulation.auditView.length : 0);
 
 const after = JSON.stringify({ nodes, edges, defenses });
 assert.equal(after, before, 'caller-owned state was mutated');
