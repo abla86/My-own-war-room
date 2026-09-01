@@ -318,12 +318,13 @@ export function App() {
 
   // Authoritative security decision path: UI payload -> SecurityEngine -> WarRoom presentation.
   const processAttack = useCallback(
-    async (rawPayload: string | Record<string, unknown>, attackerIp: string, showModal: boolean = false) => {
+    async (rawPayload: string | Record<string, unknown>, attackerIp: string, showModal: boolean = false, attackCategory?: WarRoomAttackInput['vector']) => {
       const simulation = runWarRoomSecuritySimulation(
         rawPayload,
         securityNodes,
         securityEdges,
-        securityDefenses
+        securityDefenses,
+        attackCategory
       );
 
       setLastWarRoomSimulation(simulation);
@@ -717,7 +718,7 @@ export function App() {
         <WarRoomAttackBuilder
           attack={warRoomAttack}
           setAttack={setWarRoomAttack}
-          onRun={() => processAttack(warRoomAttack.payload, '198.51.100.10', false)}
+          onRun={() => processAttack(warRoomAttack.payload, '198.51.100.10', false, warRoomAttack.vector)}
         />
         <WarRoomDefenseConfigurator defenses={securityDefenses} setDefenses={setSecurityDefenses} />
         <WarRoomTopologyEditor
