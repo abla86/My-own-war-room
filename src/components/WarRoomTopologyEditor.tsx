@@ -9,7 +9,7 @@ interface Props {
 
 export default function WarRoomTopologyEditor({ nodes, edges, setNodes, setEdges }: Props) {
   const addNode = () => setNodes([...nodes, {
-    id: `warroom-node-${crypto.randomUUID()}`,
+    id: 'warroom-node-' + crypto.randomUUID(),
     name: 'New Security Node',
     type: 'agent',
     status: 'clean',
@@ -22,14 +22,19 @@ export default function WarRoomTopologyEditor({ nodes, edges, setNodes, setEdges
     infectionHistory: [],
   }]);
 
-  const addEdge = () => setEdges([...edges, {
-    id: `warroom-edge-${crypto.randomUUID()}`,
-    source: nodes[0]?.id ?? '',
-    target: nodes[1]?.id ?? nodes[0]?.id ?? '',
-    protocol: 'custom',
-    isInfected: false,
-    isBlocked: false,
-  }]);
+  const canAddEdge = nodes.length >= 2;
+
+  const addEdge = () => {
+    if (!canAddEdge) return;
+    setEdges([...edges, {
+      id: 'warroom-edge-' + crypto.randomUUID(),
+      source: nodes[0].id,
+      target: nodes[1].id,
+      protocol: 'custom',
+      isInfected: false,
+      isBlocked: false,
+    }]);
+  };
 
   return (
     <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
@@ -37,10 +42,17 @@ export default function WarRoomTopologyEditor({ nodes, edges, setNodes, setEdges
         <h3 className="text-sm font-semibold text-cyan-300">Topology Editor</h3>
         <div className="flex gap-2">
           <button type="button" onClick={addNode} className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800">Add Node</button>
-          <button type="button" onClick={addEdge} className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800">Add Edge</button>
+          <button
+            type="button"
+            onClick={addEdge}
+            disabled={!canAddEdge}
+            className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+            title={canAddEdge ? 'Add an edge between the first two nodes.' : 'Add at least two nodes before creating an edge.'}
+          >
+            Add Edge
+          </button>
         </div>
       </div>
-
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <div className="space-y-2">
           <h4 className="text-xs uppercase tracking-wide text-slate-500">Nodes</h4>
