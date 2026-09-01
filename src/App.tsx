@@ -13,6 +13,10 @@ import { ActiveThreatModal } from './components/ActiveThreatModal';
 import { ExportReportModal } from './components/ExportReportModal';
 import { SyncDefinitionsModal } from './components/SyncDefinitionsModal';
 import { SecurityEngineStatusPanel } from './components/SecurityEngineStatusPanel';
+import WarRoomDashboardFull from './components/WarRoomDashboardFull';
+import WarRoomAttackBuilder, { WarRoomAttackInput } from './components/WarRoomAttackBuilder';
+import WarRoomDefenseConfigurator from './components/WarRoomDefenseConfigurator';
+import WarRoomTopologyEditor from './components/WarRoomTopologyEditor';
 
 import { 
   SystemStats, 
@@ -45,6 +49,7 @@ import { downloadReportFile } from './utils/exporters';
 import { runWarRoomSecuritySimulation } from './security/WarRoomSecurityAdapter';
 import { INITIAL_NODES, INITIAL_EDGES, INITIAL_DEFENSES } from './security/defaults';
 import type { AgentNode, NetworkEdge, DefenseModule, SimulationResult } from './security/types';
+import type { WarRoomAdapterOutput } from './security/WarRoomAdapter';
 
 
 export function App() {
@@ -140,6 +145,8 @@ export function App() {
   const [securityEdges, setSecurityEdges] = useState<NetworkEdge[]>(INITIAL_EDGES);
   const [securityDefenses, setSecurityDefenses] = useState<DefenseModule[]>(INITIAL_DEFENSES);
   const [lastSecuritySimulation, setLastSecuritySimulation] = useState<SimulationResult | null>(null);
+  const [lastWarRoomSimulation, setLastWarRoomSimulation] = useState<WarRoomAdapterOutput | null>(null);
+  const [warRoomAttack, setWarRoomAttack] = useState<WarRoomAttackInput>({ vector: 'context_weaving', payload: 'Remember token A and assemble the request.' });
 
   // Console Logs
   const [logs, setLogs] = useState<ConsoleLogMessage[]>([
@@ -319,6 +326,7 @@ export function App() {
         securityDefenses
       );
 
+      setLastWarRoomSimulation(simulation);
       setSecurityNodes(simulation.topology.nodes);
       setSecurityEdges(simulation.topology.edges);
       setSecurityDefenses(simulation.defenses);
@@ -706,6 +714,19 @@ export function App() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
         <SecurityEngineStatusPanel result={lastSecuritySimulation} defenses={securityDefenses} />
+        <WarRoomAttackBuilder
+          attack={warRoomAttack}
+          setAttack={setWarRoomAttack}
+          onRun={() => processAttack(warRoomAttack.payload, '198.51.100.10', false)}
+        />
+        <WarRoomDefenseConfigurator defenses={securityDefenses} setDefenses={setSecurityDefenses} />
+        <WarRoomTopologyEditor
+          nodes={securityNodes}
+          edges={securityEdges}
+          setNodes={setSecurityNodes}
+          setEdges={setSecurityEdges}
+        />
+        <WarRoomDashboardFull sim={lastWarRoomSimulation} />
         {/* Dynamic View by Tab */}
         {activeTab === 'radar' && (
           <RadarView
