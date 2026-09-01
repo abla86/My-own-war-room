@@ -323,6 +323,7 @@ export function App() {
       setSecurityEdges(simulation.topology.edges);
       setSecurityDefenses(simulation.defenses);
       setLastSecuritySimulation(simulation.result);
+      setLogs((prev) => [...simulation.auditView, ...prev].slice(0, 200));
 
       const evaluation = simulation.legacyEvaluation;
 
