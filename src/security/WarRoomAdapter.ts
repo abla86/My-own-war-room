@@ -10,14 +10,14 @@ import type {
 } from './types';
 import { SecurityEngine } from './SecurityEngine';
 import { PRESET_ATTACKS } from './defaults';
-import { calculateShannonEntropy } from '../utils/crypto';
 
 /**
- * Lossless WarRoom presentation contract.
+ * WarRoom presentation adapter.
  *
- * The adapter only maps data that exists in the SecurityEngine contract.
- * It does not invent IP/geo/ASN, hashes, entropy fields for forensic blocks,
- * or other UI data that has no authoritative source in the engine output.
+ * SecurityEngine remains authoritative. This layer only maps engine output
+ * into structures consumed by the existing WarRoom. Legacy forensic fields
+ * that have no SecurityEngine source remain explicitly outside the engine
+ * contract and are supplied by the existing WarRoom presentation path.
  */
 export interface WarRoomAdapterOutput {
   result: SimulationResult;
@@ -36,11 +36,10 @@ export interface WarRoomAdapterOutput {
   timelineView: SimulationStep[];
   auditView: AuditLogEntry[];
   defenseView: DefenseModule[];
-  /** Data required by the existing App while the legacy presentation model remains. */
+  /** Compatibility data for the existing WarRoom forensic presentation. */
   legacyEvaluation: {
     threat: string;
     countermeasure: string;
-    entropy: number;
     payloadStr: string;
     riskLevel: LegacyAttackVector['riskLevel'];
     status: 'PROBING' | 'TRAPPED' | 'JAMMED' | 'LOOPED' | 'ISOLATED';
@@ -53,9 +52,9 @@ function payloadString(rawPayload: string | Record<string, unknown>): string {
 
 /**
  * The existing WarRoom entry point supplies only a raw payload.
- * Until App.tsx supplies a concrete AttackVector, this bridge selects the
- * existing preset family deterministically. This is an input compatibility
- * bridge, not SecurityEngine decision logic.
+ * Until App.tsx supplies a concrete SecurityEngine AttackVector, this bridge
+ * selects the existing preset family deterministically. This is input
+ * compatibility mapping, not SecurityEngine decision logic.
  */
 function classifyPayload(payload: string): AttackVector['category'] {
   const p = payload.toLowerCase();
@@ -87,7 +86,7 @@ function classifyPayload(payload: string): AttackVector['category'] {
 function buildAttack(rawPayload: string | Record<string, unknown>): AttackVector {
   const payload = payloadString(rawPayload);
   const category = classifyPayload(payload);
-  const preset = PRESET_ATTACKS.find((attack) => attack.category === category) ?? PRESET_ATTACKS[0];
+  const preset = PRESET_ATTACKS.find((candidate) => candidate.category === category) ?? PRESET_ATTACKS[0];
 
   return {
     ...preset,
@@ -115,7 +114,6 @@ export function runWarRoomSecuritySimulation(
   defenses: DefenseModule[],
 ): WarRoomAdapterOutput {
   const attack = buildAttack(rawPayload);
-  const payload = payloadString(rawPayload);
 
   const {
     result,
@@ -126,8 +124,8 @@ export function runWarRoomSecuritySimulation(
   } = SecurityEngine.runSimulation(attack, nodes, edges, defenses);
 
   const lastStep = result.steps[result.steps.length - 1];
-  const entropy = calculateShannonEntropy(payload);
   const reason = lastStep?.reason ?? 'SecurityEngine evaluation completed.';
+  const payload = payloadString(rawPayload);
 
   return {
     attack,
@@ -149,7 +147,6 @@ export function runWarRoomSecuritySimulation(
     legacyEvaluation: {
       threat: attack.name,
       countermeasure: reason,
-      entropy,
       payloadStr: payload,
       riskLevel: attack.severity,
       status: statusFor(attack.category, result.finalVerdict),
