@@ -1,4 +1,4 @@
-import type { AttackVector as LegacyAttackVector } from '../types';
+import type { AttackVector as LegacyAttackVector, ConsoleLogMessage } from '../types';
 import type {
   AgentNode,
   NetworkEdge,
@@ -34,7 +34,7 @@ export interface WarRoomAdapterOutput {
     metrics: SimulationResult['metrics'];
   };
   timelineView: SimulationStep[];
-  auditView: AuditLogEntry[];
+  auditView: ConsoleLogMessage[];
   defenseView: DefenseModule[];
   /** Compatibility data for the existing WarRoom forensic presentation. */
   legacyEvaluation: {
@@ -45,6 +45,31 @@ export interface WarRoomAdapterOutput {
     riskLevel: LegacyAttackVector['riskLevel'];
     status: 'PROBING' | 'TRAPPED' | 'JAMMED' | 'LOOPED' | 'ISOLATED';
   };
+}
+
+function mapAuditLevel(type: AuditLogEntry['type']): ConsoleLogMessage['level'] {
+  switch (type) {
+    case 'ATTACK':
+      return 'DANGER';
+    case 'DEFENSE':
+      return 'COUNTERMEASURE';
+    case 'QUARANTINE':
+      return 'WARN';
+    case 'HASH_VERIFY':
+      return 'WORM';
+    case 'DRIFT':
+      return 'WARN';
+  }
+}
+
+function mapAuditView(entries: AuditLogEntry[]): ConsoleLogMessage[] {
+  return entries.map((entry) => ({
+    id: entry.id,
+    timestamp: new Date(entry.timestamp).toLocaleTimeString(),
+    level: mapAuditLevel(entry.type),
+    message: entry.message,
+    details: [entry.source, entry.target].filter(Boolean).join(' → ') || undefined,
+  }));
 }
 
 function payloadString(rawPayload: string | Record<string, unknown>): string {
@@ -144,7 +169,7 @@ export function runWarRoomSecuritySimulation(
       metrics: result.metrics,
     },
     timelineView: result.steps,
-    auditView: auditLogs,
+    auditView: mapAuditView(auditLogs),
     defenseView: updatedDefenses,
     legacyEvaluation: {
       threat: attack.name,
