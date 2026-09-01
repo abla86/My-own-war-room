@@ -17,10 +17,8 @@ const vectors: AttackCategory[] = [
   'context_weaving',
   'tool_poisoning',
   'privilege_escalation',
-  'memory_poisoning',
   'rag_corruption',
   'evaluation_cheating',
-  'cognitive_load',
 ];
 
 export default function WarRoomAttackBuilder({ attack, setAttack, onRun }: Props) {
@@ -57,7 +55,7 @@ export default function WarRoomAttackBuilder({ attack, setAttack, onRun }: Props
         )}
       </div>
       <p className="mt-2 text-[11px] text-slate-500">
-        The current adapter accepts the raw payload as its public WarRoom entry point; vector selection is retained as UI intent.
+        Vector selection maps directly to a supported SecurityEngine preset.
       </p>
     </section>
   );

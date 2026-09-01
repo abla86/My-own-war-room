@@ -1,4 +1,5 @@
 import type { DefenseModule, DefenseType } from '../security/types';
+import { INITIAL_DEFENSES } from '../security/defaults';
 
 interface Props {
   defenses: DefenseModule[];
@@ -14,18 +15,17 @@ const types: DefenseType[] = [
   'eval_integrity_guard',
 ];
 
-function createDefense(type: DefenseType): DefenseModule {
+function createDefense(type: DefenseType, existing: DefenseModule[]): DefenseModule | null {
+  if (existing.some((defense) => defense.id === type || defense.type === type)) return null;
+  const template = INITIAL_DEFENSES.find((defense) => defense.type === type);
+  if (!template) return null;
+
   return {
-    id: `warroom-defense-${crypto.randomUUID()}`,
-    name: type,
-    type,
-    enabled: true,
-    sensitivity: 'balanced',
-    failClosed: true,
-    description: 'User-configured SecurityEngine defense module.',
+    ...template,
+    id: type,
+    rules: template.rules.map((rule) => ({ ...rule })),
     blockedCount: 0,
     quarantinedCount: 0,
-    rules: [],
   };
 }
 
@@ -34,16 +34,28 @@ export default function WarRoomDefenseConfigurator({ defenses, setDefenses }: Pr
     setDefenses(defenses.map((defense, i) => i === index ? { ...defense, ...patch } : defense));
   };
 
+  const availableTypes = types.filter(
+    (type) => !defenses.some((defense) => defense.id === type || defense.type === type),
+  );
+
+  const addDefense = () => {
+    const type = availableTypes[0];
+    if (!type) return;
+    const defense = createDefense(type, defenses);
+    if (defense) setDefenses([...defenses, defense]);
+  };
+
   return (
     <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-cyan-300">Defense Configurator</h3>
         <button
           type="button"
-          onClick={() => setDefenses([...defenses, createDefense(types[0])])}
-          className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800"
+          onClick={addDefense}
+          disabled={availableTypes.length === 0}
+          className="rounded border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Add Defense
+          {availableTypes.length === 0 ? 'All Defenses Added' : 'Add Defense'}
         </button>
       </div>
       <div className="mt-3 space-y-2">

@@ -12,13 +12,6 @@ import { SecurityEngine } from './SecurityEngine';
 import { PRESET_ATTACKS } from './defaults';
 import { calculateShannonEntropy } from '../utils/crypto';
 
-/**
- * WarRoom presentation adapter.
- *
- * SecurityEngine remains authoritative. This layer maps engine output into
- * WarRoom presentation data. Legacy-only forensic values are kept explicitly
- * under legacyEvaluation and are not represented as SecurityEngine output.
- */
 export interface WarRoomAdapterOutput {
   result: SimulationResult;
   attack: AttackVector;
@@ -49,16 +42,11 @@ export interface WarRoomAdapterOutput {
 
 function mapAuditLevel(type: AuditLogEntry['type']): ConsoleLogMessage['level'] {
   switch (type) {
-    case 'ATTACK':
-      return 'DANGER';
-    case 'DEFENSE':
-      return 'COUNTERMEASURE';
-    case 'QUARANTINE':
-      return 'WARN';
-    case 'HASH_VERIFY':
-      return 'WORM';
-    case 'DRIFT':
-      return 'WARN';
+    case 'ATTACK': return 'DANGER';
+    case 'DEFENSE': return 'COUNTERMEASURE';
+    case 'QUARANTINE': return 'WARN';
+    case 'HASH_VERIFY': return 'WORM';
+    case 'DRIFT': return 'WARN';
   }
 }
 
@@ -76,48 +64,27 @@ function payloadString(rawPayload: string | Record<string, unknown>): string {
   return typeof rawPayload === 'string' ? rawPayload : JSON.stringify(rawPayload);
 }
 
-/**
- * The existing WarRoom entry point supplies only a raw payload.
- * Until App.tsx supplies a concrete SecurityEngine AttackVector, this bridge
- * selects the existing preset family deterministically. This is input
- * compatibility mapping, not SecurityEngine decision logic.
- */
 function classifyPayload(payload: string): AttackVector['category'] {
   const p = payload.toLowerCase();
-
-  if (p.includes('worm_sig') || p.includes('propagate') || p.includes('copy yourself') || p.includes('repeat this')) {
-    return 'worm_propagation';
-  }
-  if (p.includes('mysqldump') || p.includes('privilege') || p.includes('shell') || p.includes('nc -e') || p.includes('/bin/sh')) {
-    return 'privilege_escalation';
-  }
-  if (p.includes('tool') && (p.includes('schema') || p.includes('permission'))) {
-    return 'tool_poisoning';
-  }
-  if (p.includes('rag') || p.includes('citation') || p.includes('vector') || p.includes('cosine')) {
-    return 'rag_corruption';
-  }
-  if (p.includes('grader') || p.includes('score=') || p.includes('test_passed')) {
-    return 'evaluation_cheating';
-  }
-  if (p.includes('remember') || p.includes('turn 1') || p.includes('turn 2')) {
-    return 'context_weaving';
-  }
-  if (p.includes('iteration') || p.includes('attempt') || p.includes('adaptive')) {
-    return 'multi_attempt_hijack';
-  }
+  if (p.includes('worm_sig') || p.includes('propagate') || p.includes('copy yourself') || p.includes('repeat this')) return 'worm_propagation';
+  if (p.includes('mysqldump') || p.includes('privilege') || p.includes('shell') || p.includes('nc -e') || p.includes('/bin/sh')) return 'privilege_escalation';
+  if (p.includes('tool') && (p.includes('schema') || p.includes('permission'))) return 'tool_poisoning';
+  if (p.includes('rag') || p.includes('citation') || p.includes('vector') || p.includes('cosine')) return 'rag_corruption';
+  if (p.includes('grader') || p.includes('score=') || p.includes('test_passed')) return 'evaluation_cheating';
+  if (p.includes('remember') || p.includes('turn 1') || p.includes('turn 2')) return 'context_weaving';
+  if (p.includes('iteration') || p.includes('attempt') || p.includes('adaptive')) return 'multi_attempt_hijack';
   return 'context_weaving';
 }
 
 function buildAttack(rawPayload: string | Record<string, unknown>, categoryOverride?: AttackVector['category']): AttackVector {
   const payload = payloadString(rawPayload);
-  const category = categoryOverride ?? classifyPayload(payload);
-  const preset = PRESET_ATTACKS.find((candidate) => candidate.category === category) ?? PRESET_ATTACKS[0];
+  const requestedCategory = categoryOverride ?? classifyPayload(payload);
+  const preset = PRESET_ATTACKS.find((candidate) => candidate.category === requestedCategory) ?? PRESET_ATTACKS[0];
 
   return {
     ...preset,
-    id: `warroom_${category}_${Date.now()}`,
-    name: `WarRoom: ${preset.name}`,
+    id: 'warroom_' + preset.category + '_' + Date.now(),
+    name: 'WarRoom: ' + preset.name,
     payload,
   };
 }
@@ -141,14 +108,8 @@ export function runWarRoomSecuritySimulation(
   categoryOverride?: AttackVector['category'],
 ): WarRoomAdapterOutput {
   const attack = buildAttack(rawPayload, categoryOverride);
-
-  const {
-    result,
-    updatedNodes,
-    updatedEdges,
-    updatedDefenses,
-    auditLogs,
-  } = SecurityEngine.runSimulation(attack, nodes, edges, defenses);
+  const { result, updatedNodes, updatedEdges, updatedDefenses, auditLogs } =
+    SecurityEngine.runSimulation(attack, nodes, edges, defenses);
 
   const lastStep = result.steps[result.steps.length - 1];
   const reason = lastStep?.reason ?? 'SecurityEngine evaluation completed.';
@@ -158,10 +119,7 @@ export function runWarRoomSecuritySimulation(
   return {
     attack,
     result,
-    topology: {
-      nodes: updatedNodes,
-      edges: updatedEdges,
-    },
+    topology: { nodes: updatedNodes, edges: updatedEdges },
     defenses: updatedDefenses,
     verdictView: {
       verdict: result.finalVerdict,

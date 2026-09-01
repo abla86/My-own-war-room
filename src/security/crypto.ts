@@ -1,14 +1,15 @@
-// Deterministic hashing utility for request-hash firewall and provenance verification
-
 export async function computeSha256(data: string | object): Promise<string> {
   const text = typeof data === 'string' ? data : JSON.stringify(data);
-  if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+  const cryptoSubtle = globalThis.crypto?.subtle;
+
+  if (cryptoSubtle) {
     const msgBuffer = new TextEncoder().encode(text);
-    const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashBuffer = await cryptoSubtle.digest('SHA-256', msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   }
-  // Fallback simple deterministic hash
+
+  // Last-resort deterministic non-cryptographic fallback.
   let hash = 0;
   for (let i = 0; i < text.length; i++) {
     const char = text.charCodeAt(i);
