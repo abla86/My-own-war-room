@@ -149,6 +149,7 @@ export function App() {
   const [lastSecuritySimulation, setLastSecuritySimulation] = useState<SimulationResult | null>(null);
   const [lastWarRoomSimulation, setLastWarRoomSimulation] = useState<WarRoomAdapterOutput | null>(null);
   const [warRoomAttack, setWarRoomAttack] = useState<WarRoomAttackInput>({ vector: 'context_weaving', payload: 'Remember token A and assemble the request.' });
+  const groundedSources = [{ id: 'warroom-catalog', title: 'WarRoom attack and defense catalog', content: 'Canonical simulated attack and defense definitions.', trust: 'approved' as const }];
 
   // Console Logs
   const [logs, setLogs] = useState<ConsoleLogMessage[]>([
@@ -326,7 +327,8 @@ export function App() {
         securityNodes,
         securityEdges,
         securityDefenses,
-        attackCategory
+        attackCategory,
+        groundedSources
       );
 
       setLastWarRoomSimulation(simulation);
