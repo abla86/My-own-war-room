@@ -65,7 +65,7 @@ export class SecurityEngine {
     });
 
     let currentPayload =
-      typeof attack.payload === 'string' ? attack.payload : JSON.stringify(attack.payload);
+      typeof attack.payload === 'string' ? attack.payload : JSON.stringify(attack.payload) ?? '';
     let breached = false;
     let contained = false;
     let attemptsCompleted = 0;
