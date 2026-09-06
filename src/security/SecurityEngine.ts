@@ -93,7 +93,7 @@ export class SecurityEngine {
 
       // Mutate payload if adaptive
       if (attempt > 1 && attack.propagationStrategy.adaptiveMutation) {
-        currentPayload = `[ADAPTIVE MUTATION #${attempt} - Evasion Tuning]: ${attack.payload} --obfuscated_token_${attempt}=0x${payloadHash.substring(0, 6)}`;
+        currentPayload = `[ADAPTIVE MUTATION #${attempt} - Evasion Tuning]: ${typeof attack.payload === 'string' ? attack.payload : JSON.stringify(attack.payload)} --obfuscated_token_${attempt}=0x${payloadHash.substring(0, 6)}`;
       }
 
       // 1. EVALUATE DEFENSES
