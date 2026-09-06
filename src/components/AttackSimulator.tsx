@@ -1052,6 +1052,9 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
                     <option value="DDOS">DDoS & Volumetrisk Flom</option>
                     <option value="SQLI">SQL-Injisering</option>
                     <option value="XSS">XSS / Klient-injeksjon</option>
+                    <option value="AUTOMATED_ABUSE">Automatisert misbruk / OAT</option>
+                    <option value="CREDENTIAL_ATTACK">Credential Attack / Brute Force / Stuffing</option>
+                    <option value="AI_SECURITY">AI / LLM / TIP / MCP</option>
                   </select>
                 </div>
               </div>
