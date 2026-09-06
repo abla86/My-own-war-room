@@ -40,6 +40,9 @@ export interface AttackVector {
     | 'ICS_SCADA' 
     | 'API_GRAPHQL' 
     | 'PRIVILEGE_ESCALATION' 
+    | 'AUTOMATED_ABUSE'
+    | 'CREDENTIAL_ATTACK'
+    | 'AI_SECURITY'
     | 'CUSTOM';
   description: string;
   payload: Record<string, unknown> | string;
@@ -56,6 +59,13 @@ export interface AttackVector {
   volumetricGbps?: number;
   packetsPerSec?: number;
   isCustomUserVector?: boolean;
+  /** Canonical taxonomy references used for coverage/audit reporting. */
+  frameworks?: string[];
+  /** Stable family label used to group vectors across taxonomies. */
+  attackFamily?: string;
+  /** Marks a vector as safe/inert simulation data rather than an executable exploit. */
+  safeSimulation?: boolean;
+  references?: string[];
 }
 
 export interface ThreatFeedSource {
