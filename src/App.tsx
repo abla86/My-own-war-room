@@ -554,7 +554,7 @@ export function App() {
       const randomIp = `45.${Math.floor(Math.random() * 200)}.${Math.floor(Math.random() * 255)}.${Math.floor(
         Math.random() * 255
       )}`;
-      await processAttack(JSON.stringify(randomVector.payload), randomIp, false);
+      await processAttack(JSON.stringify(randomVector.payload), randomIp, false, randomVector.category);
       await new Promise((r) => setTimeout(r, 80));
     }
 
