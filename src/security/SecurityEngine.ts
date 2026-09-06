@@ -61,11 +61,12 @@ export class SecurityEngine {
       };
     });
 
-    let currentPayload = attack.payload;
+    let currentPayload =
+      typeof attack.payload === 'string' ? attack.payload : JSON.stringify(attack.payload);
     let breached = false;
     let contained = false;
     let attemptsCompleted = 0;
-    const maxAttempts = Math.max(1, attack.maxAttempts || 1);
+    const maxAttempts = Math.max(1, attack.maxAttempts ?? 1);
 
     // Identify entry node based on target type
     const targetNode = currentNodes.find((n) => n.type === attack.targetNodeType) || currentNodes[1] || currentNodes[0];
@@ -73,7 +74,7 @@ export class SecurityEngine {
 
     // Determine initial provenance
     let currentProvenance: ProvenanceSource = 'USER';
-    if (attack.category === 'tool_poisoning' || attack.category === 'privilege_escalation') {
+    if (attack.category === 'tool_poisoning' || attack.category === 'privilege_escalation' || attack.category === 'automated_abuse' || attack.category === 'credential_attack' || attack.category === 'ai_security' || attack.category === 'dos' || attack.category === 'ddos') {
       currentProvenance = 'WEB_UNTRUSTED';
     } else if (attack.category === 'memory_poisoning') {
       currentProvenance = 'MEMORY';
@@ -177,6 +178,39 @@ export class SecurityEngine {
         ragDefense.blockedCount++;
         finalVerdict = 'DENY';
         decisionReason = 'RAG Verifier: Citation chunk failed bidirectional cosine provenance verification.';
+      }
+
+      // Automated-abuse / credential / AI security controls.
+      const automatedDefense = currentDefenses.find((d) => d.id === 'automated_abuse_guard' && d.enabled);
+      const aiDefense = currentDefenses.find((d) => d.id === 'ai_security_guard' && d.enabled);
+      const availabilityDefense = currentDefenses.find((d) => d.id === 'dos_ddos_guard' && d.enabled);
+
+      if (automatedDefense && (attack.category === 'automated_abuse' || attack.category === 'credential_attack') && finalVerdict !== 'DENY') {
+        triggeredDefenseIds.push(automatedDefense.id);
+        automatedDefense.blockedCount++;
+        finalVerdict = 'DENY';
+        decisionReason = 'Automated Abuse Guard: rate, identity and velocity controls blocked the synthetic automated-abuse attempt.';
+      }
+
+      if (aiDefense && attack.category === 'ai_security' && finalVerdict !== 'DENY') {
+        const aiPatterns = [
+          /prompt injection/i, /task-in-prompt/i, /system prompt/i, /tool poisoning/i,
+          /rug pull/i, /excessive agency/i, /unbounded consumption/i,
+          /sensitive information/i, /poison/i, /embedding/i, /misinformation/i,
+        ];
+        if (aiPatterns.some((pattern) => pattern.test(currentPayload)) || attack.owaspTag?.startsWith('LLM') || attack.name.includes('TIP') || attack.name.includes('MCP')) {
+          triggeredDefenseIds.push(aiDefense.id);
+          aiDefense.blockedCount++;
+          finalVerdict = 'DENY';
+          decisionReason = 'AI Security Guard: synthetic AI-agent attack pattern blocked before privileged execution.';
+        }
+      }
+
+      if (availabilityDefense && (attack.category === 'dos' || attack.category === 'ddos') && finalVerdict !== 'DENY') {
+        triggeredDefenseIds.push(availabilityDefense.id);
+        availabilityDefense.blockedCount++;
+        finalVerdict = 'DENY';
+        decisionReason = 'Availability Guard: synthetic DoS/DDoS resource-exhaustion pattern blocked.';
       }
 
       // 2. APPLY VERDICT TO STEP & TOPOLOGY
