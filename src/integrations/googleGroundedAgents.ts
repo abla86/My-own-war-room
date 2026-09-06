@@ -34,3 +34,41 @@ export function canAgentInfluenceSecurityDecision(request: AgentActionRequest): 
   void request;
   return false;
 }
+
+export type SecurityEvidenceRecord = {
+  id: string;
+  simulationId: string;
+  attackVectorId: string | number;
+  verdict: string;
+  sourceIds: string[];
+  createdAt: string;
+};
+
+export function buildSecurityEvidenceRecord(
+  simulationId: string,
+  attackVectorId: string | number,
+  verdict: string,
+  context: GroundedContext,
+): SecurityEvidenceRecord {
+  return {
+    id: `evidence_${simulationId}_${String(attackVectorId)}`,
+    simulationId,
+    attackVectorId,
+    verdict,
+    sourceIds: context.sources.map((source) => source.id),
+    createdAt: new Date().toISOString(),
+  };
+}
+
+export function buildAnalystBrief(
+  context: GroundedContext,
+  verdict: string,
+): string {
+  const sourceTitles = context.sources.map((source) => source.title).join('; ');
+  return [
+    `Security verdict: ${verdict}`,
+    `Grounded query: ${context.query}`,
+    sourceTitles ? `Approved sources: ${sourceTitles}` : 'Approved sources: none',
+    'AI output is advisory and cannot override the SecurityEngine decision.',
+  ].join('\\n');
+}
