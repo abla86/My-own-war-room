@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import { runWarRoomSecuritySimulation } from './WarRoomAdapter';
 import { INITIAL_NODES, INITIAL_EDGES, INITIAL_DEFENSES } from './defaults';
 
+import { MASTER_ATTACK_CATALOG } from '../data/attackCatalog';
+import { SecurityEngine } from './SecurityEngine';
+
 const nodes = structuredClone(INITIAL_NODES);
 const edges = structuredClone(INITIAL_EDGES);
 const defenses = structuredClone(INITIAL_DEFENSES);
@@ -64,9 +67,6 @@ assert.equal(after, before, 'caller-owned state was mutated');
 console.log('WarRoom integration verification: PASS');
 console.log(`verdict=${simulation.result.finalVerdict} steps=${simulation.result.steps.length} audit=${simulation.auditView.length}`);
 
-
-import { MASTER_ATTACK_CATALOG } from '../data/attackCatalog';
-import { SecurityEngine } from './SecurityEngine';
 
 const extendedVectors = MASTER_ATTACK_CATALOG.filter(
   (attack) =>
