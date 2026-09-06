@@ -11,6 +11,7 @@ import {
   NodeStatus,
 } from './types';
 import { syncHash } from './crypto';
+import { ADDITIONAL_DEFENSES } from './defaults';
 
 export class SecurityEngine {
   /**
@@ -37,7 +38,9 @@ export class SecurityEngine {
     const updatedEdges = edges.map((e) => ({ ...e, isInfected: false, isBlocked: false }));
 
     // Clone caller-owned defenses, including nested rule arrays, so simulation never mutates input state.
-    const currentDefenses: DefenseModule[] = defenses.map((d) => ({
+    const suppliedDefenseIds = new Set(defenses.map((d) => d.id));
+    const effectiveDefenses = [...defenses, ...ADDITIONAL_DEFENSES.filter((d) => !suppliedDefenseIds.has(d.id))];
+    const currentDefenses: DefenseModule[] = effectiveDefenses.map((d) => ({
       ...d,
       rules: d.rules.map((r) => ({ ...r })),
     }));
