@@ -258,6 +258,42 @@ export const PRESET_ATTACKS: AttackVector[] = [
   },
 ];
 
+export const ADDITIONAL_DEFENSES: DefenseModule[] = [
+  {
+    id:'automated_abuse_guard', name:'Automated Abuse & Credential Guard', type:'automated_abuse_guard',
+    enabled:true, sensitivity:'strict', failClosed:true,
+    description:'Defensive simulator control for OAT, brute-force, credential-stuffing and automated abuse patterns.',
+    blockedCount:0, quarantinedCount:0,
+    rules:[
+      {id:'aa_1',condition:'AutomatedVelocityExceeded',action:'DENY',enabled:true},
+      {id:'aa_2',condition:'CredentialReusePatternDetected',action:'DENY',enabled:true},
+      {id:'aa_3',condition:'AutomatedEnumerationDetected',action:'QUARANTINE',enabled:true},
+    ],
+  },
+  {
+    id:'ai_security_guard', name:'AI Agent / TIP / MCP Security Guard', type:'ai_security_guard',
+    enabled:true, sensitivity:'strict', failClosed:true,
+    description:'Blocks synthetic prompt-injection, TIP, MCP tool-poisoning, tool-drift and excessive-agency simulations before privileged execution.',
+    blockedCount:0, quarantinedCount:0,
+    rules:[
+      {id:'ai_1',condition:'DirectOrIndirectPromptInjection',action:'DENY',enabled:true},
+      {id:'ai_2',condition:'TaskInPromptAttack',action:'DENY',enabled:true},
+      {id:'ai_3',condition:'MCPToolPoisoningOrRugPull',action:'DENY',enabled:true},
+      {id:'ai_4',condition:'ExcessiveAgency',action:'DENY',enabled:true},
+    ],
+  },
+  {
+    id:'dos_ddos_guard', name:'DoS / DDoS Availability Guard', type:'dos_ddos_guard',
+    enabled:true, sensitivity:'strict', failClosed:true,
+    description:'Defensive simulator control for synthetic resource-exhaustion and availability attacks.',
+    blockedCount:0, quarantinedCount:0,
+    rules:[
+      {id:'av_1',condition:'ResourceExhaustionPattern',action:'DENY',enabled:true},
+      {id:'av_2',condition:'VolumetricBurstPattern',action:'DENY',enabled:true},
+    ],
+  },
+];
+
 export const INITIAL_DEFENSES: DefenseModule[] = [
   {
     id: 'provenance_firewall',
