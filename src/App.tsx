@@ -501,7 +501,7 @@ export function App() {
         return [newBlip, ...prevBlips.slice(0, 7)];
       });
     },
-    [addLog, chain, securityNodes, securityEdges, securityDefenses]
+    [addLog, chain, groundedSources, securityNodes, securityEdges, securityDefenses]
   );
 
   // Attack simulator triggers
