@@ -338,6 +338,13 @@ export function App() {
 
       const evaluation = simulation.legacyEvaluation;
 
+      // One canonical simulation drives every presentation surface.
+      const securityAudit = simulation.auditView.map((entry) => ({
+        ...entry,
+        id: entry.id ?? `audit-${simulation.result.id}-${Date.now()}`,
+      }));
+      setLogs((prev) => [...securityAudit, ...prev.filter((log) => !securityAudit.some((entry) => entry.id === log.id))].slice(0, 200));
+
       playRadarPing();
       const countermeasureSound =
         evaluation.status === 'ISOLATED'
