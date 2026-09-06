@@ -85,7 +85,7 @@ function classifyPayload(payload: string): AttackVector['category'] {
 function buildAttack(rawPayload: string | Record<string, unknown>, categoryOverride?: AttackVector['category']): AttackVector {
   const payload = payloadString(rawPayload);
   const requestedCategory = categoryOverride ?? classifyPayload(payload);
-  const preset = [...MASTER_ATTACK_CATALOG, ...PRESET_ATTACKS].find((candidate) => candidate.category === requestedCategory) ?? PRESET_ATTACKS[0];
+  const preset = [...MASTER_ATTACK_CATALOG, ...PRESET_ATTACKS].find((candidate) => candidate.category === requestedCategory) ?? MASTER_ATTACK_CATALOG[0] ?? PRESET_ATTACKS[0];
 
   return {
     ...preset,
