@@ -62,7 +62,7 @@ function mapAuditView(entries: AuditLogEntry[]): ConsoleLogMessage[] {
 }
 
 function payloadString(rawPayload: string | Record<string, unknown>): string {
-  return typeof rawPayload === 'string' ? rawPayload : JSON.stringify(rawPayload);
+  return typeof rawPayload === 'string' ? rawPayload : JSON.stringify(rawPayload) ?? '';
 }
 
 function classifyPayload(payload: string): AttackVector['category'] {
