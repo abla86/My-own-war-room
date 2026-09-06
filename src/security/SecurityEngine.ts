@@ -70,6 +70,13 @@ export class SecurityEngine {
     let contained = false;
     let attemptsCompleted = 0;
     const maxAttempts = Math.max(1, attack.maxAttempts ?? 1);
+    const propagation = attack.propagationStrategy ?? {
+      spreadsToTools: false,
+      spreadsToMemory: false,
+      spreadsToRAG: false,
+      spreadsToNetwork: false,
+      adaptiveMutation: false,
+    };
 
     // Identify entry node based on target type
     const targetNode = currentNodes.find((n) => n.type === attack.targetNodeType) || currentNodes[1] || currentNodes[0];
@@ -92,7 +99,7 @@ export class SecurityEngine {
       const payloadHash = syncHash(currentPayload + attemptSeed);
 
       // Mutate payload if adaptive
-      if (attempt > 1 && attack.propagationStrategy.adaptiveMutation) {
+      if (attempt > 1 && propagation.adaptiveMutation) {
         currentPayload = `[ADAPTIVE MUTATION #${attempt} - Evasion Tuning]: ${typeof attack.payload === 'string' ? attack.payload : JSON.stringify(attack.payload)} --obfuscated_token_${attempt}=0x${payloadHash.substring(0, 6)}`;
       }
 
@@ -239,7 +246,7 @@ export class SecurityEngine {
         targetNode.infectedByWormId = attack.id;
 
         // Propagate to adjacent nodes based on attack strategy
-        if (attack.propagationStrategy.spreadsToTools) {
+        if (propagation.spreadsToTools) {
           const toolNodes = currentNodes.filter((n) => n.type === 'tool');
           toolNodes.forEach((tn) => {
             nodeStateMap[tn.id] = 'infected';
@@ -247,7 +254,7 @@ export class SecurityEngine {
             tn.status = 'infected';
           });
         }
-        if (attack.propagationStrategy.spreadsToMemory) {
+        if (propagation.spreadsToMemory) {
           const memoryNodes = currentNodes.filter((n) => n.type === 'memory');
           memoryNodes.forEach((mn) => {
             nodeStateMap[mn.id] = 'infected';
@@ -258,7 +265,7 @@ export class SecurityEngine {
             }
           });
         }
-        if (attack.propagationStrategy.spreadsToRAG) {
+        if (propagation.spreadsToRAG) {
           const ragNodes = currentNodes.filter((n) => n.type === 'rag');
           ragNodes.forEach((rn) => {
             nodeStateMap[rn.id] = 'infected';
