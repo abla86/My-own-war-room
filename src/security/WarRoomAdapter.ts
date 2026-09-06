@@ -12,6 +12,7 @@ import { SecurityEngine } from './SecurityEngine';
 import { PRESET_ATTACKS } from './defaults';
 import { MASTER_ATTACK_CATALOG } from '../data/attackCatalog';
 import { calculateShannonEntropy } from '../utils/crypto';
+import { buildGroundedContext, buildSecurityEvidenceRecord, buildAnalystBrief, type GroundingSource } from '../integrations/googleGroundedAgents';
 
 export interface WarRoomAdapterOutput {
   result: SimulationResult;
@@ -30,6 +31,12 @@ export interface WarRoomAdapterOutput {
   timelineView: SimulationStep[];
   auditView: ConsoleLogMessage[];
   defenseView: DefenseModule[];
+  groundedView: {
+    query: string;
+    approvedSourceIds: string[];
+    evidenceId: string;
+    analystBrief: string;
+  };
   /** Compatibility data for the existing WarRoom forensic presentation. */
   legacyEvaluation: {
     threat: string;
@@ -118,6 +125,7 @@ export function runWarRoomSecuritySimulation(
   edges: NetworkEdge[],
   defenses: DefenseModule[],
   categoryOverride?: AttackVector['category'],
+  groundingSources: GroundingSource[] = [],
 ): WarRoomAdapterOutput {
   const attack = buildAttack(rawPayload, categoryOverride);
   const { result, updatedNodes, updatedEdges, updatedDefenses, auditLogs } =
@@ -126,6 +134,9 @@ export function runWarRoomSecuritySimulation(
   const lastStep = result.steps[result.steps.length - 1];
   const reason = lastStep?.reason ?? 'SecurityEngine evaluation completed.';
   const payload = payloadString(rawPayload);
+  const groundedContext = buildGroundedContext(`${attack.name}: ${payload}`, groundingSources);
+  const evidence = buildSecurityEvidenceRecord(String(result.id), attack.id, result.finalVerdict, groundedContext);
+  const analystBrief = buildAnalystBrief(groundedContext, result.finalVerdict);
   const legacyEntropy = calculateShannonEntropy(payload);
 
   return {
@@ -142,6 +153,12 @@ export function runWarRoomSecuritySimulation(
     timelineView: result.steps,
     auditView: mapAuditView(auditLogs),
     defenseView: updatedDefenses,
+    groundedView: {
+      query: groundedContext.query,
+      approvedSourceIds: groundedContext.sources.map((source) => source.id),
+      evidenceId: evidence.id,
+      analystBrief,
+    },
     legacyEvaluation: {
       threat: attack.name,
       countermeasure: reason,
