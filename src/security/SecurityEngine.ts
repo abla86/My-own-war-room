@@ -13,7 +13,35 @@ import {
 import { syncHash } from './crypto';
 import { ADDITIONAL_DEFENSES } from './defaults';
 
+export interface SecurityExecutionEnvelope {
+  result: SimulationResult;
+  auditLogs: AuditLogEntry[];
+  evidence: Array<{ id: string; simulationId: string; attackVectorId: string | number; verdict: string; sourceIds: string[] }>;
+}
+
 export class SecurityEngine {
+  static runGroundedSimulation(
+    attack: AttackVector,
+    nodes: AgentNode[],
+    edges: NetworkEdge[],
+    defenses: DefenseModule[],
+    sources: Array<{ id: string; title: string; uri?: string; content: string; trust: 'approved' | 'unverified' }>,
+  ): SecurityExecutionEnvelope {
+    const execution = SecurityEngine.runSimulation(attack, nodes, edges, defenses);
+    const approvedSourceIds = sources.filter((source) => source.trust === 'approved').map((source) => source.id);
+    return {
+      result: execution.result,
+      auditLogs: execution.auditLogs,
+      evidence: [{
+        id: `evidence_${execution.result.id}_${String(attack.id)}`,
+        simulationId: execution.result.id,
+        attackVectorId: attack.id,
+        verdict: execution.result.finalVerdict,
+        sourceIds: approvedSourceIds,
+      }],
+    };
+  }
+
   /**
    * Evaluates an incoming attack vector against the current node topology and active defenses.
    */
