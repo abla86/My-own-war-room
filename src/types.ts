@@ -23,31 +23,13 @@ export interface BlacklistedIp {
 }
 
 export interface AttackVector {
-  id: number;
+  id: number | string;
   name: string;
-  category: 
-    | 'RECON' 
-    | 'SQLI' 
-    | 'RCE' 
-    | 'XSS' 
-    | 'ZERO_DAY' 
-    | 'DOS' 
-    | 'DDOS' 
-    | 'SUPPLY_CHAIN' 
-    | 'RANSOMWARE' 
-    | 'MEMORY_CORRUPTION' 
-    | 'AUTH_BYPASS' 
-    | 'ICS_SCADA' 
-    | 'API_GRAPHQL' 
-    | 'PRIVILEGE_ESCALATION' 
-    | 'AUTOMATED_ABUSE'
-    | 'CREDENTIAL_ATTACK'
-    | 'AI_SECURITY'
-    | 'CUSTOM';
+  category: AttackCategory;
   description: string;
   payload: Record<string, unknown> | string;
   defaultCountermeasure: string;
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  riskLevel: ActionRiskLevel;
   enabled?: boolean;
   cve?: string;
   mitreId?: string;
@@ -59,15 +41,23 @@ export interface AttackVector {
   volumetricGbps?: number;
   packetsPerSec?: number;
   isCustomUserVector?: boolean;
-  /** Canonical taxonomy references used for coverage/audit reporting. */
   frameworks?: string[];
-  /** Stable family label used to group vectors across taxonomies. */
   attackFamily?: string;
-  /** Marks a vector as safe/inert simulation data rather than an executable exploit. */
   safeSimulation?: boolean;
   references?: string[];
+  severity?: ActionRiskLevel;
+  nistReference?: string;
+  owaspReference?: string;
+  targetNodeType?: NodeType;
+  maxAttempts?: number;
+  propagationStrategy?: {
+    spreadsToTools: boolean;
+    spreadsToMemory: boolean;
+    spreadsToRAG: boolean;
+    spreadsToNetwork: boolean;
+    adaptiveMutation: boolean;
+  };
 }
-
 export interface ThreatFeedSource {
   id: string;
   name: string;
