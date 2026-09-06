@@ -10,6 +10,7 @@ import type {
 } from './types';
 import { SecurityEngine } from './SecurityEngine';
 import { PRESET_ATTACKS } from './defaults';
+import { MASTER_ATTACK_CATALOG } from '../data/attackCatalog';
 import { calculateShannonEntropy } from '../utils/crypto';
 
 export interface WarRoomAdapterOutput {
@@ -79,11 +80,11 @@ function classifyPayload(payload: string): AttackVector['category'] {
 function buildAttack(rawPayload: string | Record<string, unknown>, categoryOverride?: AttackVector['category']): AttackVector {
   const payload = payloadString(rawPayload);
   const requestedCategory = categoryOverride ?? classifyPayload(payload);
-  const preset = PRESET_ATTACKS.find((candidate) => candidate.category === requestedCategory) ?? PRESET_ATTACKS[0];
+  const preset = [...MASTER_ATTACK_CATALOG, ...PRESET_ATTACKS].find((candidate) => candidate.category === requestedCategory) ?? PRESET_ATTACKS[0];
 
   return {
     ...preset,
-    id: 'warroom_' + preset.category + '_' + Date.now(),
+    id: 'warroom_' + String(preset.id) + '_' + Date.now(),
     name: 'WarRoom: ' + preset.name,
     payload,
   };
@@ -135,7 +136,7 @@ export function runWarRoomSecuritySimulation(
       countermeasure: reason,
       entropy: legacyEntropy,
       payloadStr: payload,
-      riskLevel: attack.severity,
+      riskLevel: attack.severity ?? attack.riskLevel,
       status: statusFor(attack.category, result.finalVerdict),
     },
   };
