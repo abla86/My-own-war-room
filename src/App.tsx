@@ -503,7 +503,7 @@ export function App() {
 
     const ip = customIp || `198.51.100.${Math.floor(Math.random() * 200) + 10}`;
     const payload = customPayload || (typeof vector.payload === 'string' ? vector.payload : JSON.stringify(vector.payload));
-    await processAttack(payload, ip, true);
+    await processAttack(payload, ip, true, vector.category);
   };
 
   // Swarm test
@@ -519,7 +519,7 @@ export function App() {
       const randomIp = `185.${Math.floor(Math.random() * 200)}.${Math.floor(Math.random() * 255)}.${Math.floor(
         Math.random() * 255
       )}`;
-      await processAttack(JSON.stringify(randomVector.payload), randomIp, false);
+      await processAttack(JSON.stringify(randomVector.payload), randomIp, false, randomVector.category);
       await new Promise((r) => setTimeout(r, 180));
     }
 
@@ -535,7 +535,7 @@ export function App() {
 
     for (const vector of pool) {
       const dummyIp = `103.225.17.${Math.floor(Math.random() * 250) + 1}`;
-      await processAttack(JSON.stringify(vector.payload), dummyIp, false);
+      await processAttack(JSON.stringify(vector.payload), dummyIp, false, vector.category);
       await new Promise((r) => setTimeout(r, 320));
     }
 
