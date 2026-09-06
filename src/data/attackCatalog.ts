@@ -1,11 +1,13 @@
 import { AttackVector } from '../types';
+import { OWASP_AUTOMATED_ATTACKS } from './owaspAutomatedThreatCatalog';
+import { AI_SECURITY_ATTACKS } from './aiSecurityAttackCatalog';
 
 /**
  * MASTER REGISTER OF KNOWN & REGISTERED CYBER ATTACK VECTORS
  * Covers CVEs, MITRE ATT&CK Techniques, OWASP Top 10, and historical APT campaigns.
  * Designed for extensible addition of custom vectors.
  */
-export const MASTER_ATTACK_CATALOG: AttackVector[] = [
+export const CORE_ATTACK_CATALOG: AttackVector[] = [
   // 1. RECONNAISSANCE & OSINT
   {
     id: 1,
@@ -678,6 +680,23 @@ export const MASTER_ATTACK_CATALOG: AttackVector[] = [
     enabled: true,
   }
 ];
+
+/**
+ * Unified master catalog. Core vectors are retained, while the OWASP OAT and
+ * AI/TIP/MCP packs are merged into the same simulator surface.
+ */
+export const MASTER_ATTACK_CATALOG: AttackVector[] = [
+  ...CORE_ATTACK_CATALOG,
+  ...OWASP_AUTOMATED_ATTACKS,
+  ...AI_SECURITY_ATTACKS,
+].map((vector) => ({
+  ...vector,
+  safeSimulation: vector.safeSimulation ?? true,
+  frameworks: vector.frameworks ?? [
+    ...(vector.owaspTag ? ['OWASP'] : []),
+    ...(vector.mitreId ? ['MITRE ATT&CK / ATLAS'] : []),
+  ],
+}));
 
 const CUSTOM_VECTORS_STORAGE_KEY = 'wpww_custom_attack_vectors_v1';
 
