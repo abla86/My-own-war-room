@@ -295,6 +295,7 @@ export const ADDITIONAL_DEFENSES: DefenseModule[] = [
 ];
 
 export const INITIAL_DEFENSES: DefenseModule[] = [
+  ...ADDITIONAL_DEFENSES,
   {
     id: 'provenance_firewall',
     name: 'Provenance-Driven Authorization Firewall',
