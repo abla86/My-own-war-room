@@ -25,11 +25,37 @@ export interface BlacklistedIp {
 export interface AttackVector {
   id: number;
   name: string;
-  category: 'RECON' | 'SQLI' | 'RCE' | 'XSS' | 'ZERO_DAY' | 'DOS' | 'CUSTOM';
+  category: 
+    | 'RECON' 
+    | 'SQLI' 
+    | 'RCE' 
+    | 'XSS' 
+    | 'ZERO_DAY' 
+    | 'DOS' 
+    | 'DDOS' 
+    | 'SUPPLY_CHAIN' 
+    | 'RANSOMWARE' 
+    | 'MEMORY_CORRUPTION' 
+    | 'AUTH_BYPASS' 
+    | 'ICS_SCADA' 
+    | 'API_GRAPHQL' 
+    | 'PRIVILEGE_ESCALATION' 
+    | 'CUSTOM';
   description: string;
   payload: Record<string, unknown> | string;
   defaultCountermeasure: string;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  enabled?: boolean;
+  cve?: string;
+  mitreId?: string;
+  owaspTag?: string;
+  recommendedMitigation?: string;
+  year?: number;
+  protocol?: string;
+  ddosProtocol?: 'TCP_SYN' | 'UDP_AMP' | 'HTTP_FLOOD' | 'SLOWLORIS' | 'ICMP' | 'DNS' | 'BOTNET';
+  volumetricGbps?: number;
+  packetsPerSec?: number;
+  isCustomUserVector?: boolean;
 }
 
 export interface ThreatFeedSource {
@@ -207,13 +233,21 @@ export interface GodModeConfig {
   airGapSimulation: boolean;
   zeroKnowledgeMemoryWipe: boolean;
   cpuCoreIsolation: boolean;
+
+  // DDoS & Volumetrisk Forsvar (kan velges eller velges vekk)
+  ddosMitigationEnabled: boolean;
+  synCookieProxyEnabled: boolean;
+  udpScrubbingCenterEnabled: boolean;
+  slowlorisTimeoutProtection: boolean;
+  bgpAnycastBlackholeEnabled: boolean;
+  botnetReputationFilter: boolean;
 }
 
 export interface CyberGladiator {
   id: string;
   name: string;
   title: string;
-  category: 'VIRUS' | 'AI_DEFENDER' | 'RANSOMWARE' | 'ZERO_DAY' | 'WIPER' | 'CUSTOM';
+  category: 'VIRUS' | 'AI_DEFENDER' | 'RANSOMWARE' | 'ZERO_DAY' | 'WIPER' | 'DDOS_BOTNET' | 'APT_ACTOR' | 'ICS_SCADA' | 'SUPPLY_CHAIN' | 'CUSTOM';
   avatar: string;
   hp: number;
   maxHp: number;
@@ -222,7 +256,7 @@ export interface CyberGladiator {
   entropyChaos: number; // 1.00 - 8.00
   speed: number; // 1-100
   color: string;
-  element: 'MALWARE' | 'AI_SENTINEL' | 'ZERO_DAY' | 'WIPER' | 'ENCRYPTION' | 'DECOY';
+  element: 'MALWARE' | 'AI_SENTINEL' | 'ZERO_DAY' | 'WIPER' | 'ENCRYPTION' | 'DECOY' | 'DDOS' | 'EXPLOIT' | 'ICS' | 'SUPPLY_CHAIN';
   signatureMove: {
     name: string;
     description: string;
@@ -278,7 +312,7 @@ export interface BattleClashRecord {
   loser: CyberGladiator;
   decisiveStatName: string;
   decisiveStatValue: string;
-  decisiveFactor: 'ENTROPY' | 'MIRROR_JAMMING' | 'HEAP_OVERFLOW' | 'KYBER_SHIELD' | 'CRITICAL_SPEED' | 'ZERO_DAY_EXPLOIT' | 'BLACKOUT_BAN';
+  decisiveFactor: 'ENTROPY' | 'MIRROR_JAMMING' | 'HEAP_OVERFLOW' | 'KYBER_SHIELD' | 'CRITICAL_SPEED' | 'ZERO_DAY_EXPLOIT' | 'BLACKOUT_BAN' | 'DDOS_SCRUBBING' | 'SYN_PROXY' | 'DDOS_MITIGATION';
   rounds: number;
   totalDamage: number;
   peakEntropy: number;

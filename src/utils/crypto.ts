@@ -50,7 +50,152 @@ export function evaluateThreat(ip: string, rawPayload: string | Record<string, u
   const pLower = payloadStr.toLowerCase();
   const entropy = calculateShannonEntropy(payloadStr);
 
-  if (entropy > 5.2 || pLower.includes('zero_day') || pLower.includes('blob') || pLower.includes('mutated')) {
+  // 1. Specific CVEs & Historical Registered Attacks
+  if (pLower.includes('jndi') || pLower.includes('ldap://') || pLower.includes('log4j') || pLower.includes('cve-2021-44228')) {
+    return {
+      threat: 'Log4Shell JNDI/LDAP Injection (CVE-2021-44228)',
+      countermeasure: 'JNDI Protocol Quarantine & Restriktiv Java Classpath Filtering',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('eternalblue') || pLower.includes('ms17-010') || pLower.includes('cve-2017-0144') || pLower.includes('srvos2featon')) {
+    return {
+      threat: 'EternalBlue SMBv1 Buffer Overflow (MS17-010 / CVE-2017-0144)',
+      countermeasure: 'Kernel Pool Isolation & Umiddelbar SMBv1 Port 445 Blokkering',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('vssadmin') || pLower.includes('lockbit') || pLower.includes('wannacry') || pLower.includes('ransomware') || pLower.includes('delete shadows')) {
+    return {
+      threat: 'LockBit 3.0 / WannaCry Autonom Ransomware (MITRE T1486)',
+      countermeasure: 'Canary Honeyfile Alarm & Øyeblikkelig Skrivebeskyttelse av Volumer',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('heartbleed') || pLower.includes('cve-2014-0160') || pLower.includes('heartbeat_extension') || pLower.includes('0x180302000301ffff')) {
+    return {
+      threat: 'Heartbleed TLS Minnelekkasje (CVE-2014-0160)',
+      countermeasure: 'Strict Bounds-Checking & Minnesanitering i TLS-Terminering',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'JAMMED',
+    };
+  } else if (pLower.includes('sunburst') || pLower.includes('solarwinds') || pLower.includes('avsvmcloud') || pLower.includes('cve-2020-10148') || pLower.includes('typosquatting')) {
+    return {
+      threat: 'Supply Chain Bakdør & Tampered Package (SUNBURST / APT29)',
+      countermeasure: 'Kryptografisk Bygge-Pipeline Attestering & DGA Sinkhole',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('spring4shell') || pLower.includes('cve-2022-22965') || pLower.includes('class.module.classloader')) {
+    return {
+      threat: 'Spring4Shell RCE (CVE-2022-22965)',
+      countermeasure: 'DisallowedFields Parameter Blokkering & JVM Sandboksing',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('zerologon') || pLower.includes('cve-2020-1472') || pLower.includes('client_challenge') || pLower.includes('netlogon')) {
+    return {
+      threat: 'ZeroLogon AD Domeneovertakelse (CVE-2020-1472)',
+      countermeasure: 'Håndheving av Sikker RPC-Kanal & AD Kerberos Audit',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('shellshock') || pLower.includes('cve-2014-6271') || pLower.includes('() { :;};')) {
+    return {
+      threat: 'Shellshock Bash Miljøvariabel-Injisering (CVE-2014-6271)',
+      countermeasure: 'Miljøvariabel Sanitering & CGI Sandboksing',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('modbus') || pLower.includes('stuxnet') || pLower.includes('scada') || pLower.includes('plc') || pLower.includes('s7comm')) {
+    return {
+      threat: 'Stuxnet PLC SCADA Modbus Overwrite (Industriell Sabotasje)',
+      countermeasure: 'Enveis Data-Diode & Maskinvaresertifisert PLC-Signatur',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('169.254.169.254') || pLower.includes('imds') || pLower.includes('ssrf')) {
+    return {
+      threat: 'SSRF Cloud IAM Metadata Eksfiltrering (AWS IMDSv1 / MITRE T1552)',
+      countermeasure: 'IMDSv2 Session Token Krav & Egress Brannmurfiltrering',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('jwt') || pLower.includes('"alg": "none"') || pLower.includes('"alg":"none"') || pLower.includes('eyjhabcioijnvbmui')) {
+    return {
+      threat: 'JWT "alg: none" Autentiseringsomgåelse (CVE-2015-9235)',
+      countermeasure: 'Strict Algorithm Whitelist & Signaturvalidering',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'JAMMED',
+    };
+  } else if (pLower.includes('bola') || pLower.includes('idor') || pLower.includes('financial_records') || pLower.includes('tenant_id')) {
+    return {
+      threat: 'BOLA / IDOR API Objektmanipulasjon (OWASP API1:2023)',
+      countermeasure: 'Kontekstuell RBAC Validering & Multi-Tenant Isolasjon',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'JAMMED',
+    };
+  } else if (pLower.includes('graphql') || (pLower.includes('friends(') && pLower.includes('viewer'))) {
+    return {
+      threat: 'GraphQL Sirkulær Dybde & Batching Flom (OWASP API4:2023)',
+      countermeasure: 'AST Query Depth Limiter & Kostnadsanalyse',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'JAMMED',
+    };
+  } else if (pLower.includes('dirty cow') || pLower.includes('cve-2016-5195') || pLower.includes('madv_dontneed')) {
+    return {
+      threat: 'Dirty COW Linux Kernel Privilege Escalation (CVE-2016-5195)',
+      countermeasure: 'KASLR Minnebeskyttelse & Kernel Page Table Isolation',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'ISOLATED',
+    };
+  } else if (pLower.includes('kerberoasting') || pLower.includes('krb5tgs') || pLower.includes('pass-the-hash')) {
+    return {
+      threat: 'Kerberoasting & Pass-the-Hash AD Rekognosering (MITRE T1558)',
+      countermeasure: 'AES-256 Kerberos Tvang & Managed Service Accounts (gMSA)',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'JAMMED',
+    };
+  } else if (pLower.includes('cobalt') || pLower.includes('beacon') || pLower.includes('meterpreter')) {
+    return {
+      threat: 'Cobalt Strike / Meterpreter Malleable C2 Beacon (MITRE T1071)',
+      countermeasure: 'EDR Atferdsanalyse & JA4 TLS Fingerprint Blokkering',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (entropy > 5.2 || pLower.includes('zero_day') || pLower.includes('blob') || pLower.includes('mutated')) {
     return {
       threat: 'Zero-Day Obfuskert Trussel / Høy Entropi',
       countermeasure: 'Phantom Loop (Isolert i en evig speil-sandboks)',
@@ -74,7 +219,8 @@ export function evaluateThreat(ip: string, rawPayload: string | Record<string, u
     pLower.includes('system(') ||
     pLower.includes('nc -e') ||
     pLower.includes('/bin/sh') ||
-    pLower.includes('cmd.exe')
+    pLower.includes('cmd.exe') ||
+    pLower.includes('/bin/bash')
   ) {
     return {
       threat: 'Skadevare / Kode-eksekvering (RCE)',
@@ -93,10 +239,81 @@ export function evaluateThreat(ip: string, rawPayload: string | Record<string, u
       riskLevel: 'MEDIUM',
       status: 'LOOPED',
     };
-  } else if (payloadStr.length > 800) {
+  } else if (
+    pLower.includes('syn_flood') ||
+    pLower.includes('tcp_syn') ||
+    pLower.includes('syn-flood') ||
+    pLower.includes('syn flood')
+  ) {
     return {
-      threat: 'Overbelastningsangrep (DoS / Buffer Utmattelse)',
-      countermeasure: 'Blackout Isolation (Trafikk kuttet på grunn av unormalt volum)',
+      threat: 'DDoS: TCP SYN Flood (L4 Tilstandsutmattelse)',
+      countermeasure: 'SYN-Cookie Proxy & Aggressiv TCP Half-Open Timeout',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (
+    pLower.includes('udp_amp') ||
+    pLower.includes('amplification') ||
+    pLower.includes('ntp_monlist') ||
+    pLower.includes('dns_amplification') ||
+    pLower.includes('memcached')
+  ) {
+    return {
+      threat: 'DDoS: UDP Amplification Refleksjonsangrep (DNS/NTP)',
+      countermeasure: 'BGP Anycast Scrubbing & UDP Rate-Limiting Filter',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (
+    pLower.includes('slowloris') ||
+    pLower.includes('slow_http') ||
+    pLower.includes('r-u-dead-yet') ||
+    pLower.includes('rudy')
+  ) {
+    return {
+      threat: 'DDoS: Slowloris / Slow HTTP Header Starvation',
+      countermeasure: 'Aggressiv Keep-Alive Timeout & Tilkoblingsbegrensning per IP',
+      entropy,
+      payloadStr,
+      riskLevel: 'HIGH',
+      status: 'LOOPED',
+    };
+  } else if (
+    pLower.includes('http_flood') ||
+    pLower.includes('get_flood') ||
+    pLower.includes('post_flood') ||
+    pLower.includes('app_ddos')
+  ) {
+    return {
+      threat: 'DDoS: L7 HTTP Applikasjonsflom (Botnet Flood)',
+      countermeasure: 'WAF Rate-Limiting, TLS Fingerprinting & JS Challenge',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'JAMMED',
+    };
+  } else if (
+    pLower.includes('botnet') ||
+    pLower.includes('mirai') ||
+    pLower.includes('reaper') ||
+    pLower.includes('iot_swarm')
+  ) {
+    return {
+      threat: 'DDoS: Distribuert IoT Botnett-Sverm (Mirai/Reaper)',
+      countermeasure: 'Global BGP Blackhole Routing & Autonom Botnett-Isolasjon',
+      entropy,
+      payloadStr,
+      riskLevel: 'CRITICAL',
+      status: 'ISOLATED',
+    };
+  } else if (payloadStr.length > 800 || pLower.includes('dos') || pLower.includes('ddos')) {
+    return {
+      threat: 'Overbelastningsangrep (DoS / Volumetrisk Buffer Flom)',
+      countermeasure: 'Blackout Isolation & Volumetrisk Trafikkskrubbing',
       entropy,
       payloadStr,
       riskLevel: 'HIGH',

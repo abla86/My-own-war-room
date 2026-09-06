@@ -170,6 +170,7 @@ export const GodModeBattleLog: React.FC<GodModeBattleLogProps> = ({
               className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none focus:border-amber-500 cursor-pointer"
             >
               <option value="ALL">Alle Faktorer</option>
+              <option value="DDOS_MITIGATION">DDoS & Anycast Scrubbing</option>
               <option value="ENTROPY">Shannon Entropi Overvekt</option>
               <option value="MIRROR_JAMMING">Mirror Jamming Refleksjon</option>
               <option value="ZERO_DAY_EXPLOIT">Zero-Day Sårbarhet</option>
@@ -190,6 +191,7 @@ export const GodModeBattleLog: React.FC<GodModeBattleLogProps> = ({
             >
               <option value="ALL">Alle Roller</option>
               <option value="AI_DEFENDER">AI Forsvarer</option>
+              <option value="DDOS_BOTNET">DDoS & Botnett</option>
               <option value="VIRUS">Virus / SQLi</option>
               <option value="ZERO_DAY">Zero-Day</option>
               <option value="RANSOMWARE">Ransomware</option>

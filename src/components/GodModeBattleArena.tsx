@@ -77,9 +77,73 @@ export const DEFAULT_GOD_MODE_CONFIG: GodModeConfig = {
   airGapSimulation: true,
   zeroKnowledgeMemoryWipe: true,
   cpuCoreIsolation: true,
+
+  // DDoS & Volumetrisk Forsvar (kan velges eller velges vekk)
+  ddosMitigationEnabled: true,
+  synCookieProxyEnabled: true,
+  udpScrubbingCenterEnabled: true,
+  slowlorisTimeoutProtection: true,
+  bgpAnycastBlackholeEnabled: true,
+  botnetReputationFilter: true,
 };
 
 export const PRESET_GLADIATORS: CyberGladiator[] = [
+  {
+    id: 'virus-mirai-botnet',
+    name: 'Mirai-Swarm Master',
+    title: 'Distribuert DDoS & IoT Botnett (100 Gbps)',
+    category: 'DDOS_BOTNET',
+    avatar: '🌐',
+    hp: 1600,
+    maxHp: 1600,
+    attackPower: 98,
+    defensePower: 75,
+    entropyChaos: 6.20,
+    speed: 95,
+    color: 'from-rose-600 to-amber-950',
+    element: 'DDOS',
+    signatureMove: {
+      name: '100 Gbps SYN/UDP Volumetric Blitzkrieg',
+      description: 'Overbelaster nettverksporter med millioner av koordinerte forespørsler fra 25 000 noder',
+      power: 330,
+      entropyShift: 0.9,
+      counterType: 'Anycast Scrubbing & SYN-Cookie Proxy',
+    },
+    moves: [
+      { id: 'm1', name: 'TCP SYN-Flood Storm', description: 'Utmatter tilstandstabellen med ubesvarte handshakes', power: 145, type: 'ATTACK' },
+      { id: 'm2', name: 'NTP/DNS Amplification Surge', description: 'Volumetrisk 50x forsterkning rettet mot gateway', power: 190, type: 'ATTACK' },
+      { id: 'm3', name: 'Slowloris Thread Exhaustion', description: 'Låser tilkoblingstråder med ufullstendige HTTP-headers', power: 110, type: 'DEFENSE' },
+      { id: 'm4', name: '100 Gbps SYN/UDP Volumetric Blitzkrieg', description: 'Massiv distribuert oversvømmelse fra hele botnettet', power: 330, type: 'ULTIMATE' },
+    ],
+  },
+  {
+    id: 'defender-anycast-scrubber',
+    name: 'Anycast Scrubbing Citadel',
+    title: 'Multi-Tbps DDoS Vakt & BGP Skjold',
+    category: 'AI_DEFENDER',
+    avatar: '🏰',
+    hp: 1550,
+    maxHp: 1550,
+    attackPower: 90,
+    defensePower: 98,
+    entropyChaos: 1.10,
+    speed: 88,
+    color: 'from-blue-600 to-indigo-950',
+    element: 'DDOS',
+    signatureMove: {
+      name: 'Global BGP Blackhole Scrubbing',
+      description: 'Omdirigerer uønsket flom-trafikk til globale rense-sentre og opprettholder null nedetid',
+      power: 315,
+      entropyShift: -1.5,
+      counterType: 'BGP Anycast & SYN-Cookie',
+    },
+    moves: [
+      { id: 'm1', name: 'SYN-Proxy Handshake Validation', description: 'Verifiserer TCP-klienter før tilkobling når applikasjonen', power: 135, type: 'DEFENSE' },
+      { id: 'm2', name: 'BGP Flowspec Rate-Limit', description: 'Kutter spesifikke angrepssignaturer ved nettverkskanten', power: 170, type: 'ATTACK' },
+      { id: 'm3', name: 'Adaptive Slowloris Keepalive Cut', description: 'Lukker inaktive tilkoblinger og frigjør tråder momentant', power: 125, type: 'OVERCLOCK' },
+      { id: 'm4', name: 'Global BGP Blackhole Scrubbing', description: 'Total nøytralisering av volumetrisk flom', power: 315, type: 'ULTIMATE' },
+    ],
+  },
   {
     id: 'virus-hydra-sqli',
     name: 'Hydra-SQLi v4.2',
@@ -274,6 +338,118 @@ export const PRESET_GLADIATORS: CyberGladiator[] = [
       { id: 'm2', name: 'Honeytoken Exploit Trap', description: 'Sender forgiftede credentials i retur', power: 175, type: 'ATTACK' },
       { id: 'm3', name: 'C2 Disruption Beacon', description: 'Blokkerer angriperens kommandokanaler', power: 110, type: 'DEFENSE' },
       { id: 'm4', name: 'Reverse Shell Overload', description: 'Total motoffensiv mot angriperens infrastruktur', power: 330, type: 'ULTIMATE' },
+    ],
+  },
+  {
+    id: 'virus-log4shell',
+    name: 'Log4Shell Leviathan',
+    title: 'JNDI/LDAP Rekursiv RCE (CVE-2021-44228)',
+    category: 'ZERO_DAY',
+    avatar: '🪵',
+    hp: 1380,
+    maxHp: 1380,
+    attackPower: 99,
+    defensePower: 60,
+    entropyChaos: 6.95,
+    speed: 91,
+    color: 'from-amber-700 to-rose-950',
+    element: 'ZERO_DAY',
+    signatureMove: {
+      name: 'Recursive JNDI LDAP Lookups',
+      description: 'Trigger Java Naming and Directory Interface til å laste ondsinnet bytecode i minnet',
+      power: 335,
+      entropyShift: 1.1,
+      counterType: 'JNDI Quarantine & Classpath Filter',
+    },
+    moves: [
+      { id: 'm1', name: 'Header Infiltration String', description: 'Gjemmer jndi-kall i User-Agent og Authorization', power: 140, type: 'ATTACK' },
+      { id: 'm2', name: 'Nested Variable Obfuscation', description: 'Bruker ${lower:j}ndi for å omgå statiske signaturer', power: 180, type: 'MUTATION' },
+      { id: 'm3', name: 'LDAP Remote Class Loader', description: 'Tvinger målserveren til å hente fjern Java-kode', power: 130, type: 'ATTACK' },
+      { id: 'm4', name: 'Recursive JNDI LDAP Lookups', description: 'Fullstendig uautentisert RCE overtakelse', power: 335, type: 'ULTIMATE' },
+    ],
+  },
+  {
+    id: 'virus-eternalblue',
+    name: 'EternalBlue Worm',
+    title: 'SMBv1 Kernel Pool Overflow (MS17-010)',
+    category: 'VIRUS',
+    avatar: '🌊',
+    hp: 1520,
+    maxHp: 1520,
+    attackPower: 97,
+    defensePower: 78,
+    entropyChaos: 6.10,
+    speed: 84,
+    color: 'from-blue-600 to-slate-950',
+    element: 'MALWARE',
+    signatureMove: {
+      name: 'DoublePulsar Ring-0 Kernel Injection',
+      description: 'Utnytter buffer overflow i SMBv1 til å injisere kjerne-shellcode direkte i Ring 0',
+      power: 325,
+      entropyShift: 0.9,
+      counterType: 'Kernel Pool Isolation & SMBv1 445 Drop',
+    },
+    moves: [
+      { id: 'm1', name: 'SrvOs2FeaToNt Transaction Probe', description: 'Overflyt i SMB-forespørsel forberedes', power: 135, type: 'ATTACK' },
+      { id: 'm2', name: 'Kernel Non-Paged Pool Grooming', description: 'Manipulerer kjerne-minneblokker presist', power: 175, type: 'MUTATION' },
+      { id: 'm3', name: 'Lateral SMB Worm Propagate', description: 'Sprer seg autonomt til alle noder på LAN', power: 140, type: 'ATTACK' },
+      { id: 'm4', name: 'DoublePulsar Ring-0 Kernel Injection', description: 'Maksimal kjerne-kompromittering med krypto-worm', power: 325, type: 'ULTIMATE' },
+    ],
+  },
+  {
+    id: 'virus-stuxnet-plc',
+    name: 'Stuxnet SCADA Destroyer',
+    title: 'Industriell PLS-Sabotør (ICS/OT Modbus)',
+    category: 'ICS_SCADA',
+    avatar: '☢️',
+    hp: 1490,
+    maxHp: 1490,
+    attackPower: 96,
+    defensePower: 86,
+    entropyChaos: 5.40,
+    speed: 76,
+    color: 'from-emerald-700 to-slate-950',
+    element: 'ICS',
+    signatureMove: {
+      name: 'Centrifuge Resonant Frequency Overdrive',
+      description: 'Manipulerer PLS-frekvensomformere i hemmelighet mens operatørskjermen viser normaldrift',
+      power: 340,
+      entropyShift: 0.8,
+      counterType: 'Enveis Data-Diode & PLS-Signatur',
+    },
+    moves: [
+      { id: 'm1', name: 'Air-Gap USB Propagation', description: 'Sniker seg over fysisk isolerte nettverk via LNK-feil', power: 130, type: 'ATTACK' },
+      { id: 'm2', name: 'Siemens Step-7 DLL Intercept', description: 'Man-in-the-middle på ingeniør-stasjonens programvare', power: 170, type: 'MUTATION' },
+      { id: 'm3', name: 'Telemetry Spoofing Cloak', description: 'Sender falske grønne sensorverdier til SCADA-skjerm', power: 120, type: 'DEFENSE' },
+      { id: 'm4', name: 'Centrifuge Resonant Frequency Overdrive', description: 'Fysisk ødeleggelse av industriell maskinvare', power: 340, type: 'ULTIMATE' },
+    ],
+  },
+  {
+    id: 'virus-sunburst-apt29',
+    name: 'SUNBURST APT29 Operator',
+    title: 'Supply Chain Bakdør (SolarWinds)',
+    category: 'SUPPLY_CHAIN',
+    avatar: '🦅',
+    hp: 1420,
+    maxHp: 1420,
+    attackPower: 94,
+    defensePower: 88,
+    entropyChaos: 4.90,
+    speed: 86,
+    color: 'from-indigo-700 to-slate-950',
+    element: 'SUPPLY_CHAIN',
+    signatureMove: {
+      name: 'Cryptographic DGA Stealth Beacon',
+      description: 'Aktiverer sovende kode via digitalt signerte oppdateringer og DGA-domener',
+      power: 310,
+      entropyShift: 0.7,
+      counterType: 'Kryptografisk Bygge-Pipeline Attestering',
+    },
+    moves: [
+      { id: 'm1', name: 'Signed Binary Tampering', description: 'Injiserer bakdør før signering i bygge-pipelinen', power: 130, type: 'ATTACK' },
+      { id: 'm2', name: 'Two-Week Dormancy Timer', description: 'Venter tålmodig i ukesvis for å unngå sandbokser', power: 100, type: 'DEFENSE' },
+      { id: 'm3', name: 'DGA DNS C2 Tunneling', description: 'Eksfiltrerer identiteter forkledd som legitime DNS-oppslag', power: 165, type: 'ATTACK' },
+      { id: 'm4', name: 'Cryptographic DGA Stealth Beacon', description: 'Komplett usynlig spionasje og sky-overtakelse', power: 310, type: 'ULTIMATE' },
     ],
   },
 ];
@@ -577,6 +753,34 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
       calculatedDamage = Math.round(calculatedDamage * 0.75);
     }
 
+    // DDoS Attack and Volumetric Mitigation Logic (kan velges eller velges vekk)
+    let ddosMitigated = false;
+    let ddosOverwhelmed = false;
+    const isDdosAttack =
+      attacker.category === 'DDOS_BOTNET' ||
+      attacker.element === 'DDOS' ||
+      move.name.toLowerCase().includes('ddos') ||
+      move.name.toLowerCase().includes('flood') ||
+      move.name.toLowerCase().includes('syn') ||
+      move.name.toLowerCase().includes('botnet') ||
+      move.name.toLowerCase().includes('amplification') ||
+      move.name.toLowerCase().includes('slowloris');
+
+    if (isDdosAttack && defender.category === 'AI_DEFENDER') {
+      if (config.ddosMitigationEnabled) {
+        ddosMitigated = true;
+        // BGP Scrubbing, SYN-Cookie Proxy, Rate-Limiter kutter skaden drastisk
+        const synCookieBonus = config.synCookieProxyEnabled ? 0.35 : 0.7;
+        const udpScrubBonus = config.udpScrubbingCenterEnabled ? 0.5 : 0.8;
+        const totalMitigation = synCookieBonus * udpScrubBonus;
+        calculatedDamage = Math.max(15, Math.round(calculatedDamage * totalMitigation));
+      } else {
+        // DDoS-forsvaret er slått AV av brukeren: massiv overbelastning
+        ddosOverwhelmed = true;
+        calculatedDamage = Math.round(calculatedDamage * 1.85);
+      }
+    }
+
     // Apply HP changes
     const newDefenderHp = Math.max(0, defender.hp - calculatedDamage);
     const newAttackerHp = Math.max(0, attacker.hp - reflectedDamage);
@@ -591,7 +795,7 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
     if (isCritical) {
       playSoundEffect('critical');
       setLastActionAnimation('CRITICAL');
-    } else if (reflectedDamage > 0) {
+    } else if (reflectedDamage > 0 || ddosMitigated) {
       playSoundEffect('shield');
       setLastActionAnimation('REFLECT');
     } else if (move.type === 'MUTATION') {
@@ -607,6 +811,8 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
     // Create combat log text
     let logMessage = `💥 [Runde ${currentRound}] ${attacker.name} brukte [${move.name}]! `;
     if (isCritical) logMessage += `🔥 KRITISK TREFF! `;
+    if (ddosMitigated) logMessage += `🛡️ [Anycast DDoS Scrubbing & SYN-Cookie] nøytraliserte flommen! `;
+    if (ddosOverwhelmed) logMessage += `⚠️ [DDoS-Forsvar DEAKTIVERT] Flommen overbelastet brannmuren (+85% skade)! `;
     logMessage += `Påførte ${calculatedDamage} skade.`;
     if (reflectedDamage > 0) {
       logMessage += ` 🛡️ [Mirror Jamming] reflekterte ${reflectedDamage} skade tilbake!`;
@@ -670,7 +876,11 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
       let decisiveStatValue = `${calculatedDamage} HP Direkte Skade`;
 
       if (winner.category === 'AI_DEFENDER') {
-        if (config.mirrorJammingEnabled && reflectedDamage > 0) {
+        if (isDdosAttack && config.ddosMitigationEnabled) {
+          decisiveFactor = 'DDOS_MITIGATION';
+          decisiveStatName = 'Anycast Scrubbing & SYN-Cookie Proxy';
+          decisiveStatValue = 'Multi-Gbps Flom nøytralisert (100% oppetid)';
+        } else if (config.mirrorJammingEnabled && reflectedDamage > 0) {
           decisiveFactor = 'MIRROR_JAMMING';
           decisiveStatName = 'Mirror Jamming Aktiv Refleksjon';
           decisiveStatValue = `${config.mirrorJammingIntensity * 10}% Reflektert Mottiltak`;
@@ -684,7 +894,11 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
           decisiveStatValue = '100% Ugjennomtrengelig Egress-lås';
         }
       } else {
-        if (winner.entropyChaos > 6.0) {
+        if (winner.category === 'DDOS_BOTNET' || isDdosAttack) {
+          decisiveFactor = 'DDOS_MITIGATION';
+          decisiveStatName = config.ddosMitigationEnabled ? 'Volumetrisk BGP Mettelse' : 'DDoS-Forsvar Manglet / Deaktivert';
+          decisiveStatValue = config.ddosMitigationEnabled ? 'Over 100 Gbps SYN-flom' : 'Brannmur lammet av utilstrekkelig båndbredde';
+        } else if (winner.entropyChaos > 6.0) {
           decisiveFactor = 'ENTROPY';
           decisiveStatName = 'Polymorf Kaos-Entropi Overvekt';
           decisiveStatValue = `${winner.entropyChaos.toFixed(2)} bits/byte Kaos-tetthet`;
@@ -714,7 +928,7 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
         peakEntropy: Math.max(attacker.entropyChaos, defender.entropyChaos),
         criticalHits: critCount,
         vulnerabilitySeverityFound: flawSeverity,
-        firewallPenetrationDepth: winner.category === 'AI_DEFENDER' ? 10 : 90,
+        firewallPenetrationDepth: winner.category === 'AI_DEFENDER' ? (ddosMitigated ? 5 : 12) : (ddosOverwhelmed ? 98 : 85),
         detailedReport: report,
         summaryLogs: [...battleLogs, logEntry],
       };
@@ -758,7 +972,7 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
   }, [battleState, isAutoBattle, turn, fighter1, fighter2, currentRound, autoSpeedMs]);
 
   // Apply Presets to God Mode Config
-  const applyPreset = (preset: 'MAX_GOD' | 'ULTRA_DEFENSIVE' | 'RETALIATION_HACK' | 'SANDBOX_LAB') => {
+  const applyPreset = (preset: 'MAX_GOD' | 'ULTRA_DEFENSIVE' | 'RETALIATION_HACK' | 'SANDBOX_LAB' | 'DDOS_FORTRESS' | 'DDOS_DISABLED') => {
     if (preset === 'MAX_GOD') {
       setConfig({
         mirrorJammingEnabled: true,
@@ -785,7 +999,38 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
         airGapSimulation: true,
         zeroKnowledgeMemoryWipe: true,
         cpuCoreIsolation: true,
+        // DDoS & Volumetrisk Forsvar
+        ddosMitigationEnabled: true,
+        synCookieProxyEnabled: true,
+        udpScrubbingCenterEnabled: true,
+        slowlorisTimeoutProtection: true,
+        bgpAnycastBlackholeEnabled: true,
+        botnetReputationFilter: true,
       });
+    } else if (preset === 'DDOS_FORTRESS') {
+      setConfig((prev) => ({
+        ...prev,
+        ddosMitigationEnabled: true,
+        synCookieProxyEnabled: true,
+        udpScrubbingCenterEnabled: true,
+        slowlorisTimeoutProtection: true,
+        bgpAnycastBlackholeEnabled: true,
+        botnetReputationFilter: true,
+        bandwidthThrottleMbps: 10000,
+        dpiWorkerCores: 32,
+        blackholeDropRate: 100,
+        retaliatoryTcpReset: true,
+      }));
+    } else if (preset === 'DDOS_DISABLED') {
+      setConfig((prev) => ({
+        ...prev,
+        ddosMitigationEnabled: false,
+        synCookieProxyEnabled: false,
+        udpScrubbingCenterEnabled: false,
+        slowlorisTimeoutProtection: false,
+        bgpAnycastBlackholeEnabled: false,
+        botnetReputationFilter: false,
+      }));
     } else if (preset === 'ULTRA_DEFENSIVE') {
       setConfig((prev) => ({
         ...prev,
@@ -798,6 +1043,9 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
         memoryHeapScramble: true,
         airGapSimulation: true,
         zeroKnowledgeMemoryWipe: true,
+        ddosMitigationEnabled: true,
+        synCookieProxyEnabled: true,
+        udpScrubbingCenterEnabled: true,
       }));
     } else if (preset === 'RETALIATION_HACK') {
       setConfig((prev) => ({
@@ -808,6 +1056,7 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
         retaliatoryTcpReset: true,
         syntheticDecoyInjection: true,
         honeytokenDensity: 350,
+        ddosMitigationEnabled: true,
       }));
     } else if (preset === 'SANDBOX_LAB') {
       setConfig((prev) => ({
@@ -1500,6 +1749,19 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
                 ⚔️ Offensiv "Hacking Back"
               </button>
               <button
+                onClick={() => applyPreset('DDOS_FORTRESS')}
+                className="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 border border-rose-600 text-rose-200 font-mono text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+              >
+                🌊 DDoS Festning (Anti-Botnet)
+              </button>
+              <button
+                onClick={() => applyPreset('DDOS_DISABLED')}
+                className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-700 text-slate-300 hover:text-rose-300 font-mono text-xs transition-colors cursor-pointer"
+                title="Skru av DDoS-forsvaret for å teste hvordan botnett-flommer overmanner ubeskyttede systemer"
+              >
+                🚫 Deaktiver DDoS (Sårbarhetstest)
+              </button>
+              <button
                 onClick={() => applyPreset('SANDBOX_LAB')}
                 className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-mono text-xs transition-colors cursor-pointer"
               >
@@ -1771,6 +2033,101 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
                     checked={config.zeroKnowledgeMemoryWipe}
                     onChange={(e) => setConfig({ ...config, zeroKnowledgeMemoryWipe: e.target.checked })}
                     className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Category 6: DDoS & Volumetrisk Forsvar (Velg eller velg vekk) */}
+            <div className="bg-slate-950 border border-rose-900/60 rounded-xl p-5 shadow-xl space-y-4 md:col-span-2 lg:col-span-1">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-rose-500" />
+                  <h3 className="font-mono font-bold text-sm text-slate-200 uppercase">
+                    6. DDoS & Volumetrisk Forsvar
+                  </h3>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">
+                  VELG / VELG VEKK
+                </span>
+              </div>
+
+              <div className="space-y-3 font-mono text-xs">
+                <label className="flex items-center justify-between p-2 rounded bg-slate-900/90 border border-rose-900/50 cursor-pointer">
+                  <div>
+                    <span className="text-slate-200 font-bold block">Autonom DDoS-Mellomvare</span>
+                    <span className="text-[10px] text-slate-400 block">Hovedbryter for Anycast-skrubbing og motangrep</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={config.ddosMitigationEnabled}
+                    onChange={(e) => setConfig({ ...config, ddosMitigationEnabled: e.target.checked })}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800 cursor-pointer">
+                  <div>
+                    <span className="text-slate-200 block">SYN-Cookie Proxy</span>
+                    <span className="text-[10px] text-slate-400 block">Nøytraliserer L4 TCP SYN-floods uten minnebruk</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={config.synCookieProxyEnabled}
+                    onChange={(e) => setConfig({ ...config, synCookieProxyEnabled: e.target.checked })}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800 cursor-pointer">
+                  <div>
+                    <span className="text-slate-200 block">Anycast UDP Rense-Senter</span>
+                    <span className="text-[10px] text-slate-400 block">Absorberer DNS/NTP 50x forsterkningsbølger</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={config.udpScrubbingCenterEnabled}
+                    onChange={(e) => setConfig({ ...config, udpScrubbingCenterEnabled: e.target.checked })}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800 cursor-pointer">
+                  <div>
+                    <span className="text-slate-200 block">Slowloris Timeout Vakt</span>
+                    <span className="text-[10px] text-slate-400 block">Kutter ufullstendige HTTP-headers og redder tråder</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={config.slowlorisTimeoutProtection}
+                    onChange={(e) => setConfig({ ...config, slowlorisTimeoutProtection: e.target.checked })}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800 cursor-pointer">
+                  <div>
+                    <span className="text-slate-200 block">BGP Flowspec Null-Ruting</span>
+                    <span className="text-[10px] text-slate-400 block">Autonom blackholing av overbelastede prefixer</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={config.bgpAnycastBlackholeEnabled}
+                    onChange={(e) => setConfig({ ...config, bgpAnycastBlackholeEnabled: e.target.checked })}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800 cursor-pointer">
+                  <div>
+                    <span className="text-slate-200 block">IoT Botnett-Omdømme Filter</span>
+                    <span className="text-[10px] text-slate-400 block">Blokkerer kjente Mirai/Reaper C2-klienter</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={config.botnetReputationFilter}
+                    onChange={(e) => setConfig({ ...config, botnetReputationFilter: e.target.checked })}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
                   />
                 </label>
               </div>
