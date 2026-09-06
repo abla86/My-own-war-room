@@ -1,3 +1,16 @@
+export type AttackCategory =
+  | 'RECON' | 'SQLI' | 'XSS' | 'RCE' | 'DOS' | 'DDOS' | 'CREDENTIAL_ATTACK'
+  | 'AUTOMATED_ABUSE' | 'AI_SECURITY' | 'ICS_SCADA' | 'NETWORK' | 'MALWARE'
+  | 'SUPPLY_CHAIN' | 'PRIVILEGE_ESCALATION' | 'SSRF' | 'AUTH_BYPASS'
+  | 'GRAPHQL' | 'DNS' | 'CUSTOM'
+  | 'worm_propagation' | 'multi_attempt_hijack' | 'context_weaving'
+  | 'tool_poisoning' | 'privilege_escalation' | 'memory_poisoning'
+  | 'rag_corruption' | 'evaluation_cheating' | 'cognitive_load'
+  | 'automated_abuse' | 'credential_attack' | 'ai_security' | 'dos' | 'ddos';
+
+export type NodeType = 'agent' | 'tool' | 'memory' | 'rag' | 'network' | 'user' | 'database';
+export type ActionRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
 export interface ForensicBlock {
   id: number;
   timestamp: string;
