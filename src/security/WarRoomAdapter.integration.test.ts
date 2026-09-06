@@ -35,6 +35,10 @@ assert.ok(Array.isArray(simulation.defenses));
 assert.ok(Array.isArray(simulation.timelineView));
 assert.ok(Array.isArray(simulation.auditView));
 assert.ok(simulation.auditView.every((entry) => typeof entry.id === 'string' && typeof entry.timestamp === 'string' && typeof entry.level === 'string' && typeof entry.message === 'string'));
+assert.equal(simulation.groundedView.approvedSourceIds.length, 0);
+assert.equal(simulation.groundedView.evidenceId, `evidence_${simulation.result.id}_${String(simulation.attack.id)}`);
+assert.ok(simulation.groundedView.analystBrief.includes(simulation.result.finalVerdict));
+
 assert.ok(Array.isArray(simulation.defenseView));
 assert.equal(simulation.timelineView.length, simulation.result.steps.length);
 assert.equal(simulation.defenses.length, simulation.defenseView.length);
