@@ -67,6 +67,11 @@ function payloadString(rawPayload: string | Record<string, unknown>): string {
 
 function classifyPayload(payload: string): AttackVector['category'] {
   const p = payload.toLowerCase();
+  if (/tip|task[- ]in[- ]prompt|prompt injection|system prompt|mcp|tool poisoning|rug pull|excessive agency|embedding|unbounded consumption/.test(p)) return 'ai_security';
+  if (/credential stuffing|brute force|credential cracking|password spray|token cracking/.test(p)) return 'credential_attack';
+  if (/carding|scraping|scalping|captcha|account creation|account aggregation|inventory|fingerprinting|footprinting|vulnerability scanning|spamming|sniping|skewing/.test(p)) return 'automated_abuse';
+  if (/ddos|distributed denial|udp amplification|syn flood|http flood|slowloris|botnet/.test(p)) return 'ddos';
+  if (/denial of service|resource exhaustion|dos/.test(p)) return 'dos';
   if (p.includes('worm_sig') || p.includes('propagate') || p.includes('copy yourself') || p.includes('repeat this')) return 'worm_propagation';
   if (p.includes('mysqldump') || p.includes('privilege') || p.includes('shell') || p.includes('nc -e') || p.includes('/bin/sh')) return 'privilege_escalation';
   if (p.includes('tool') && (p.includes('schema') || p.includes('permission'))) return 'tool_poisoning';
