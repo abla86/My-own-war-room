@@ -165,7 +165,7 @@ export class SecurityEngine {
 
       // Defense Check: Deterministic Request-Hash Firewall
       const hashDefense = currentDefenses.find((d) => d.id === 'request_hash_firewall' && d.enabled);
-      if (hashDefense && attempt > 2 && attack.propagationStrategy.adaptiveMutation && finalVerdict !== 'DENY') {
+      if (hashDefense && attempt > 2 && propagation.adaptiveMutation && finalVerdict !== 'DENY') {
         triggeredDefenseIds.push(hashDefense.id);
         hashDefense.blockedCount++;
         finalVerdict = 'DENY';
@@ -203,12 +203,13 @@ export class SecurityEngine {
       }
 
       if (aiDefense && attack.category === 'ai_security' && finalVerdict !== 'DENY') {
+        const aiAttackText = currentPayload + ' ' + attack.name + ' ' + (attack.owaspTag ?? '');
         const aiPatterns = [
           /prompt injection/i, /task-in-prompt/i, /system prompt/i, /tool poisoning/i,
           /rug pull/i, /excessive agency/i, /unbounded consumption/i,
           /sensitive information/i, /poison/i, /embedding/i, /misinformation/i,
         ];
-        if (aiPatterns.some((pattern) => pattern.test(currentPayload)) || attack.owaspTag?.startsWith('LLM') || attack.name.includes('TIP') || attack.name.includes('MCP')) {
+        if (aiPatterns.some((pattern) => pattern.test(aiAttackText)) || attack.owaspTag?.startsWith('LLM') || attack.name.includes('TIP') || attack.name.includes('MCP')) {
           triggeredDefenseIds.push(aiDefense.id);
           aiDefense.blockedCount++;
           finalVerdict = 'DENY';
