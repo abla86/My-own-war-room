@@ -57,6 +57,8 @@ type FilterCategoryType =
   | 'SUPPLY_CLOUD' 
   | 'AUTH_API' 
   | 'ICS_SCADA' 
+  | 'AUTOMATED_ABUSE'
+  | 'AI_SECURITY'
   | 'CUSTOM';
 
 export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
@@ -236,6 +238,8 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
     if (filterCategory === 'SUPPLY_CLOUD') return v.category === 'SUPPLY_CHAIN' || (v.owaspTag && v.owaspTag.includes('Server-Side Request Forgery'));
     if (filterCategory === 'AUTH_API') return v.category === 'AUTH_BYPASS' || v.category === 'API_GRAPHQL' || v.category === 'SQLI' || v.category === 'XSS';
     if (filterCategory === 'ICS_SCADA') return v.category === 'ICS_SCADA';
+    if (filterCategory === 'AUTOMATED_ABUSE') return v.category === 'AUTOMATED_ABUSE' || v.category === 'CREDENTIAL_ATTACK';
+    if (filterCategory === 'AI_SECURITY') return v.category === 'AI_SECURITY';
     if (filterCategory === 'CUSTOM') return v.isCustomUserVector === true;
     return true;
   });
@@ -468,6 +472,22 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
             }`}
           >
             Auth & API (ZeroLogon, JWT, BOLA, GraphQL)
+          </button>
+          <button
+            onClick={() => setFilterCategory('AUTOMATED_ABUSE')}
+            className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
+              filterCategory === 'AUTOMATED_ABUSE' ? 'bg-amber-600 text-slate-950 font-bold shadow' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Automatiserte angrep / Brute Force / Stuffing
+          </button>
+          <button
+            onClick={() => setFilterCategory('AI_SECURITY')}
+            className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
+              filterCategory === 'AI_SECURITY' ? 'bg-fuchsia-600 text-white font-bold shadow' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            AI / TIP / MCP
           </button>
           <button
             onClick={() => setFilterCategory('ICS_SCADA')}
