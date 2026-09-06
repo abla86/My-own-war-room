@@ -63,3 +63,42 @@ assert.equal(after, before, 'caller-owned state was mutated');
 
 console.log('WarRoom integration verification: PASS');
 console.log(`verdict=${simulation.result.finalVerdict} steps=${simulation.result.steps.length} audit=${simulation.auditView.length}`);
+
+
+import { MASTER_ATTACK_CATALOG } from '../data/attackCatalog';
+import { SecurityEngine } from './SecurityEngine';
+
+const extendedVectors = MASTER_ATTACK_CATALOG.filter(
+  (attack) =>
+    attack.category === 'automated_abuse' ||
+    attack.category === 'credential_attack' ||
+    attack.category === 'ai_security' ||
+    attack.category === 'dos' ||
+    attack.category === 'ddos',
+);
+
+assert.ok(extendedVectors.length >= 30, 'extended attack catalog should contain the new attack families');
+
+for (const attack of extendedVectors) {
+  const run = SecurityEngine.runSimulation(
+    structuredClone(attack),
+    structuredClone(INITIAL_NODES),
+    structuredClone(INITIAL_EDGES),
+    structuredClone(INITIAL_DEFENSES),
+  );
+
+  assert.ok(run.result.steps.length >= 1, attack.name);
+  assert.equal(run.result.attackVectorId, attack.id, attack.name);
+  assert.equal(run.result.category, attack.category, attack.name);
+  assert.ok(['STOPPED', 'CONTAINED', 'BREACHED'].includes(run.result.finalVerdict), attack.name);
+  assert.ok(run.result.steps.every((step) => Array.isArray(step.defensesTriggered)), attack.name);
+}
+
+const tip = MASTER_ATTACK_CATALOG.find((attack) => attack.name.includes('TIP: Task-in-Prompt'));
+assert.ok(tip, 'TIP attack must be present in the master catalog');
+assert.equal(tip?.category, 'ai_security');
+
+const mcp = MASTER_ATTACK_CATALOG.filter((attack) => /MCP/i.test(attack.name));
+assert.ok(mcp.length >= 2, 'MCP tool poisoning/rug-pull coverage must be present');
+
+console.log('Extended attack coverage verification: PASS (' + extendedVectors.length + ' vectors)');
