@@ -22,7 +22,9 @@ import {
   Swords,
   TrendingUp,
   Lightbulb,
-  GraduationCap
+  GraduationCap,
+  Search,
+  Award
 } from 'lucide-react';
 import { SystemStats } from '../types';
 import { HackerIntelTooltip } from './HackerIntelTooltip';
@@ -43,6 +45,8 @@ interface HeaderProps {
   hackerHudEnabled: boolean;
   onToggleHackerHud: () => void;
   onOpenAcademy: () => void;
+  onOpenThreatSearch: () => void;
+  onOpenTraining: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -61,6 +65,8 @@ export const Header: React.FC<HeaderProps> = ({
   hackerHudEnabled,
   onToggleHackerHud,
   onOpenAcademy,
+  onOpenThreatSearch,
+  onOpenTraining,
 }) => {
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
@@ -116,6 +122,28 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </HackerIntelTooltip>
 
+          {/* Threat Search & AI Threat Hunter */}
+          <button
+            id="btn-open-threat-search"
+            onClick={onOpenThreatSearch}
+            title="Åpne Trussel-Søk og sanntids Gemini AI Threat Hunter"
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-purple-950 to-slate-900 hover:from-purple-900 hover:to-slate-800 text-purple-300 px-2.5 py-1 rounded-md border border-purple-600/70 font-mono text-xs font-bold transition-all shadow-sm shadow-purple-950 cursor-pointer"
+          >
+            <Search className="w-3.5 h-3.5 text-purple-400" />
+            <span>🔍 Trussel-Søk & AI</span>
+          </button>
+
+          {/* Interactive Walkthrough & Training */}
+          <button
+            id="btn-open-training"
+            onClick={onOpenTraining}
+            title="Åpne interaktiv SOC Walkthrough og Superhacker Treningsarena"
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-950 to-slate-900 hover:from-emerald-900 hover:to-slate-800 text-emerald-300 px-2.5 py-1 rounded-md border border-emerald-600/70 font-mono text-xs font-bold transition-all shadow-sm shadow-emerald-950 cursor-pointer"
+          >
+            <Award className="w-3.5 h-3.5 text-emerald-400" />
+            <span>🎯 Walkthrough & Trening</span>
+          </button>
+
           {/* Quick Ethical Hacker Academy & HUD Trigger */}
           <button
             id="btn-open-hacker-academy"
@@ -124,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="inline-flex items-center gap-1.5 bg-gradient-to-r from-cyan-950 to-slate-900 hover:from-cyan-900 hover:to-slate-800 text-cyan-300 px-2.5 py-1 rounded-md border border-cyan-600/70 font-mono text-xs font-bold transition-all shadow-sm shadow-cyan-950 cursor-pointer"
           >
             <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
-            <span>🎓 Hacker-Akademi</span>
+            <span>🎓 Akademi</span>
           </button>
 
           <button

@@ -20,6 +20,8 @@ import WarRoomAttackBuilder, { WarRoomAttackInput } from './components/WarRoomAt
 import WarRoomDefenseConfigurator from './components/WarRoomDefenseConfigurator';
 import WarRoomTopologyEditor from './components/WarRoomTopologyEditor';
 import { EthicalHackerAcademyModal } from './components/EthicalHackerAcademyModal';
+import { ThreatSearchModal } from './components/ThreatSearchModal';
+import { CyberTrainingWalkthroughModal } from './components/CyberTrainingWalkthroughModal';
 
 import { 
   SystemStats, 
@@ -75,6 +77,8 @@ export function App() {
   // Ethical Hacker HUD & Academy states
   const [hackerHudEnabled, setHackerHudEnabled] = useState<boolean>(true);
   const [isHackerAcademyOpen, setIsHackerAcademyOpen] = useState<boolean>(false);
+  const [isThreatSearchOpen, setIsThreatSearchOpen] = useState<boolean>(false);
+  const [isTrainingModalOpen, setIsTrainingModalOpen] = useState<boolean>(false);
 
   // System Stats
   const [stats, setStats] = useState<SystemStats>({
@@ -736,6 +740,8 @@ export function App() {
         hackerHudEnabled={hackerHudEnabled}
         onToggleHackerHud={() => setHackerHudEnabled((prev) => !prev)}
         onOpenAcademy={() => setIsHackerAcademyOpen(true)}
+        onOpenThreatSearch={() => setIsThreatSearchOpen(true)}
+        onOpenTraining={() => setIsTrainingModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -889,6 +895,18 @@ export function App() {
       <EthicalHackerAcademyModal
         isOpen={isHackerAcademyOpen}
         onClose={() => setIsHackerAcademyOpen(false)}
+      />
+
+      {/* Threat Search & AI Threat Hunter Modal */}
+      <ThreatSearchModal
+        isOpen={isThreatSearchOpen}
+        onClose={() => setIsThreatSearchOpen(false)}
+      />
+
+      {/* Cyber Training & SOC Walkthrough Simulator Modal */}
+      <CyberTrainingWalkthroughModal
+        isOpen={isTrainingModalOpen}
+        onClose={() => setIsTrainingModalOpen(false)}
       />
 
       {/* Footer */}
