@@ -29,7 +29,8 @@ import {
   Skull,
   Crosshair,
   Award,
-  Code2
+  Code2,
+  Trophy
 } from 'lucide-react';
 import { 
   GodModeConfig, 
@@ -42,6 +43,7 @@ import {
 import { GodModeBattleLog } from './GodModeBattleLog';
 import { FirewallFilmSimulator } from './FirewallFilmSimulator';
 import { CyberArenaVisualizer } from './CyberArenaVisualizer';
+import { CyberBattleRoyaleAllFighters } from './CyberBattleRoyaleAllFighters';
 
 
 export const DEFAULT_GOD_MODE_CONFIG: GodModeConfig = {
@@ -590,7 +592,7 @@ interface GodModeBattleArenaProps {
   stats: SystemStats;
   onUpdateStats?: React.Dispatch<React.SetStateAction<SystemStats>>;
   onTriggerAttackSample?: (payload: string, ip: string) => void;
-  defaultSubTab?: 'arena' | 'penetration_film' | 'battle_logs' | 'config' | 'custom_creator';
+  defaultSubTab?: 'arena' | 'battle_royale' | 'penetration_film' | 'battle_logs' | 'config' | 'custom_creator';
 }
 
 export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
@@ -599,8 +601,8 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
   onTriggerAttackSample,
   defaultSubTab = 'arena',
 }) => {
-  // Navigation inside God Mode (Arena, Film Simulator, Battle Logs, Config, Creator)
-  const [subTab, setSubTab] = useState<'arena' | 'penetration_film' | 'battle_logs' | 'config' | 'custom_creator'>(defaultSubTab);
+  // Navigation inside God Mode (1v1 Arena, Battle Royale, Film Simulator, Battle Logs, Config, Creator)
+  const [subTab, setSubTab] = useState<'arena' | 'battle_royale' | 'penetration_film' | 'battle_logs' | 'config' | 'custom_creator'>(defaultSubTab);
 
   useEffect(() => {
     if (defaultSubTab) {
@@ -1150,7 +1152,19 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
               }`}
             >
               <Swords className="w-3.5 h-3.5" />
-              <span>Virus Kamparena</span>
+              <span>1v1 Duell</span>
+            </button>
+
+            <button
+              onClick={() => setSubTab('battle_royale')}
+              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-all cursor-pointer relative ${
+                subTab === 'battle_royale'
+                  ? 'bg-gradient-to-r from-rose-600 to-amber-500 text-white shadow-md font-bold'
+                  : 'text-rose-300 hover:text-white bg-rose-950/40 border border-rose-900/60'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <span>Battle Royale (Alle Slåss) ⚔️</span>
             </button>
 
             <button
@@ -1236,6 +1250,19 @@ export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
           onOpenReportModal={() => setShowReportModal(true)}
           showLiveModding={showLiveModding}
           setShowLiveModding={setShowLiveModding}
+        />
+      )}
+
+      {/* SUB-VIEW 1B: BATTLE ROYALE (ALLE KJEMPER MOT ALLE SAMTIDIG) */}
+      {subTab === 'battle_royale' && (
+        <CyberBattleRoyaleAllFighters
+          gladiators={gladiators}
+          config={config}
+          onUpdateConfig={setConfig}
+          onSelectFighterFor1v1={(selected) => {
+            setFighter1(selected);
+            setSubTab('arena');
+          }}
         />
       )}
 

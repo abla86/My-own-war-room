@@ -29,6 +29,8 @@ import { LiveIncidentAdvisor } from './components/LiveIncidentAdvisor';
 import { WarRoomOverviewBanner } from './components/WarRoomOverviewBanner';
 import { AutomatedSocReportView } from './components/AutomatedSocReportView';
 import { GodModeMasterModal } from './components/GodModeMasterModal';
+import { CyberTutorialFilmModal } from './components/CyberTutorialFilmModal';
+import { downloadFullProjectZip } from './utils/projectZipExporter';
 
 import { 
   SystemStats, 
@@ -90,6 +92,7 @@ export function App() {
   const [isGuideAdvisorOpen, setIsGuideAdvisorOpen] = useState<boolean>(false);
   const [guideInitialTopic, setGuideInitialTopic] = useState<string>('quickstart');
   const [isIncidentAdvisorOpen, setIsIncidentAdvisorOpen] = useState<boolean>(false);
+  const [isTutorialFilmOpen, setIsTutorialFilmOpen] = useState<boolean>(false);
   const [isAutonomousActive, setIsAutonomousActive] = useState<boolean>(false);
   const [autonomousCadenceSec, setAutonomousCadenceSec] = useState<number>(8);
   const [autonomousBlockedCount, setAutonomousBlockedCount] = useState<number>(0);
@@ -797,6 +800,15 @@ export function App() {
     );
   };
 
+  // Download entire project as ZIP
+  const handleDownloadProjectZip = async () => {
+    addLog('INFO', '📦 Forbereder full prosjekt-ZIP for nedlasting...');
+    await downloadFullProjectZip((msg) => {
+      addLog('INFO', `📦 ZIP: ${msg}`);
+    });
+    addLog('SUCCESS', '✓ Full prosjekt-ZIP ble generert og lastet ned!');
+  };
+
   return (
     <div id="wpww-app" className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
       {/* Top Header */}
@@ -829,6 +841,8 @@ export function App() {
         isGodModeActive={isGodModeActive}
         onToggleGodMode={handleToggleGodMode}
         onOpenGodModeModal={() => setIsGodModeModalOpen(true)}
+        onDownloadProjectZip={handleDownloadProjectZip}
+        onOpenTutorialFilm={() => setIsTutorialFilmOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -841,6 +855,8 @@ export function App() {
           onToggleGodMode={handleToggleGodMode}
           isAutonomousActive={isAutonomousActive}
           totalBlocks={chain.length}
+          onDownloadProjectZip={handleDownloadProjectZip}
+          onOpenTutorialFilm={() => setIsTutorialFilmOpen(true)}
         />
         {/* War Room SecurityEngine & Topology Studio */}
         {activeTab === 'warroom' && (
@@ -1090,8 +1106,24 @@ export function App() {
         onOpenAdvancedConfig={() => setActiveTab('godmode')}
       />
 
+      {/* Cyber War-Room Opplæringsfilm & Masterclass Modal */}
+      <CyberTutorialFilmModal
+        isOpen={isTutorialFilmOpen}
+        onClose={() => setIsTutorialFilmOpen(false)}
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+      />
+
       {/* Floating Quick Advisor & Field Notes Speed-Dial Dock */}
       <aside aria-label="Hurtigveileder og notater" className="fixed bottom-5 right-5 z-30 flex items-center gap-1.5 sm:gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-cyan-700/60 shadow-xl shadow-slate-950/80">
+        <button
+          onClick={() => setIsTutorialFilmOpen(true)}
+          title="Se Opplæringsfilm & Masterclass for Cyber War-Roomet"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono text-xs font-bold shadow-md transition-all cursor-pointer"
+        >
+          <span>🎬</span>
+          <span className="hidden md:inline">Film</span>
+        </button>
+
         <button
           onClick={() => setActiveTab('arena')}
           title="Hopp direkte til Cyber Arena (Gladiatorkamp)"

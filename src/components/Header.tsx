@@ -28,7 +28,9 @@ import {
   HeartPulse,
   BookOpen,
   FileText,
-  Zap
+  Zap,
+  Download,
+  Film
 } from 'lucide-react';
 import { SystemStats } from '../types';
 import { HackerIntelTooltip } from './HackerIntelTooltip';
@@ -59,6 +61,8 @@ interface HeaderProps {
   isGodModeActive?: boolean;
   onToggleGodMode?: () => void;
   onOpenGodModeModal?: () => void;
+  onDownloadProjectZip?: () => void;
+  onOpenTutorialFilm?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -87,6 +91,8 @@ export const Header: React.FC<HeaderProps> = ({
   isGodModeActive,
   onToggleGodMode,
   onOpenGodModeModal,
+  onDownloadProjectZip,
+  onOpenTutorialFilm,
 }) => {
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
@@ -241,6 +247,32 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <div className="flex items-center gap-1.5">
+            {/* Tutorial Film Trigger */}
+            {onOpenTutorialFilm && (
+              <button
+                id="btn-header-tutorial-film"
+                onClick={onOpenTutorialFilm}
+                title="Åpne Cyber War-Room Opplæringsfilm (Tutorial & Veiledning)"
+                className="inline-flex items-center gap-1 bg-gradient-to-r from-cyan-950 to-blue-950 hover:from-cyan-900 hover:to-blue-900 text-cyan-300 px-2.5 py-1 rounded border border-cyan-600/80 font-mono text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                <Film className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Film 🎬</span>
+              </button>
+            )}
+
+            {/* Download Full Project ZIP */}
+            {onDownloadProjectZip && (
+              <button
+                id="btn-header-download-zip"
+                onClick={onDownloadProjectZip}
+                title="Last ned hele programmet som ZIP (full kildekode og produksjonsklar backend)"
+                className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 px-2.5 py-1 rounded border border-amber-300 font-mono text-xs font-black transition-all shadow-md cursor-pointer hover:scale-105"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-950" />
+                <span>Last ned ZIP 💾</span>
+              </button>
+            )}
+
             {/* Quick Export Trigger */}
             <button
               id="btn-header-export"

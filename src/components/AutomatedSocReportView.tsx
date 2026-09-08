@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ForensicBlock, SystemStats, BlacklistedIp } from '../types';
 import { generateHtmlReport, generateMarkdownReport, generateJsonReport, downloadReportFile } from '../utils/exporters';
+import { downloadFullProjectZip } from '../utils/projectZipExporter';
 
 export interface AutomatedSocReportViewProps {
   stats: SystemStats;
@@ -47,6 +48,13 @@ export const AutomatedSocReportView: React.FC<AutomatedSocReportViewProps> = ({
   const [reportGeneratedAt, setReportGeneratedAt] = useState<string>(() => new Date().toLocaleString('no-NO'));
   const [reportId] = useState<string>(() => `SOC-RPT-${Math.floor(100000 + Math.random() * 900000)}`);
   const [copiedStatus, setCopiedStatus] = useState<boolean>(false);
+  const [zipStatusMsg, setZipStatusMsg] = useState<string | null>(null);
+
+  const handleDownloadZip = async () => {
+    setZipStatusMsg('Forbereder ZIP...');
+    await downloadFullProjectZip((msg) => setZipStatusMsg(msg));
+    setTimeout(() => setZipStatusMsg(null), 4000);
+  };
 
   // Calculate high-level metrics
   const totalEvents = chain.length;
@@ -126,6 +134,16 @@ export const AutomatedSocReportView: React.FC<AutomatedSocReportViewProps> = ({
 
         {/* 1-Click Export Actions */}
         <div className="flex items-center flex-wrap gap-2">
+          {/* 1-Click Complete System ZIP Download */}
+          <button
+            onClick={handleDownloadZip}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 text-xs font-mono font-black flex items-center gap-1.5 transition-all shadow-md shadow-amber-950/50 cursor-pointer hover:scale-105"
+            title="Last ned hele prosjektet som komplett ZIP (backend, frontend, WORM og tester)"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-950" />
+            <span>{zipStatusMsg || 'Last Ned Hele Programmet (ZIP) 💾'}</span>
+          </button>
+
           <button
             onClick={handleRegenerate}
             className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer"

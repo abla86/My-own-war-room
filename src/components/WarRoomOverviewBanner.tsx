@@ -10,7 +10,9 @@ import {
   ChevronDown,
   ChevronUp,
   Zap,
-  Info
+  Info,
+  Film,
+  Download
 } from 'lucide-react';
 
 export interface WarRoomOverviewBannerProps {
@@ -20,6 +22,8 @@ export interface WarRoomOverviewBannerProps {
   onToggleGodMode: () => void;
   isAutonomousActive: boolean;
   totalBlocks: number;
+  onDownloadProjectZip?: () => void;
+  onOpenTutorialFilm?: () => void;
 }
 
 export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
@@ -29,6 +33,8 @@ export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
   onToggleGodMode,
   isAutonomousActive,
   totalBlocks,
+  onDownloadProjectZip,
+  onOpenTutorialFilm,
 }) => {
   const [isExpanded, setIsExpanded] = React.useState<boolean>(true);
 
@@ -102,6 +108,30 @@ export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Tutorial Film Button */}
+          {onOpenTutorialFilm && (
+            <button
+              onClick={onOpenTutorialFilm}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-950 to-blue-950 hover:from-cyan-900 hover:to-blue-900 text-cyan-300 border border-cyan-600/80 font-mono text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+              title="Se introduksjonsfilm og masterclass for Cyber War-Roomet"
+            >
+              <Film className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Opplæringsfilm 🎬</span>
+            </button>
+          )}
+
+          {/* Download Entire Program as ZIP */}
+          {onDownloadProjectZip && (
+            <button
+              onClick={onDownloadProjectZip}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-mono text-xs font-black flex items-center gap-1.5 shadow-md transition-all cursor-pointer hover:scale-105"
+              title="Last ned hele programmet som ZIP med full kildekode og produksjonsklar backend"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-950" />
+              <span>Last ned programmet (ZIP) 💾</span>
+            </button>
+          )}
+
           {/* God mode status badge */}
           <button
             onClick={onToggleGodMode}
