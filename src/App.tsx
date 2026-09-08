@@ -26,6 +26,9 @@ import { SystemHealthDashboard } from './components/SystemHealthDashboard';
 import { HackerNotesModal } from './components/HackerNotesModal';
 import { CyberGuideAdvisorModal } from './components/CyberGuideAdvisorModal';
 import { LiveIncidentAdvisor } from './components/LiveIncidentAdvisor';
+import { WarRoomOverviewBanner } from './components/WarRoomOverviewBanner';
+import { AutomatedSocReportView } from './components/AutomatedSocReportView';
+import { GodModeMasterModal } from './components/GodModeMasterModal';
 
 import { 
   SystemStats, 
@@ -90,6 +93,8 @@ export function App() {
   const [isAutonomousActive, setIsAutonomousActive] = useState<boolean>(false);
   const [autonomousCadenceSec, setAutonomousCadenceSec] = useState<number>(8);
   const [autonomousBlockedCount, setAutonomousBlockedCount] = useState<number>(0);
+  const [isGodModeActive, setIsGodModeActive] = useState<boolean>(false);
+  const [isGodModeModalOpen, setIsGodModeModalOpen] = useState<boolean>(false);
 
   // System Stats
   const [stats, setStats] = useState<SystemStats>({
@@ -377,15 +382,19 @@ export function App() {
           : 'JAMMED';
       playCountermeasureSound(countermeasureSound);
 
+      const isBreached = !isGodModeActive && simulation.result.finalVerdict === 'BREACHED';
+
       addLog(
-        simulation.result.finalVerdict === 'BREACHED' ? 'DANGER' : 'WARN',
-        `SecurityEngine: ${simulation.attack.name} fra ${attackerIp} — ${simulation.result.finalVerdict} (entropi: ${evaluation.entropy.toFixed(2)})`,
+        isBreached ? 'DANGER' : 'WARN',
+        `SecurityEngine: ${simulation.attack.name} fra ${attackerIp} — ${isGodModeActive ? 'DEFENDED (GUDEMODUS)' : simulation.result.finalVerdict} (entropi: ${evaluation.entropy.toFixed(2)})`,
         attackerIp
       );
 
       addLog(
-        simulation.result.finalVerdict === 'BREACHED' ? 'DANGER' : 'COUNTERMEASURE',
-        simulation.result.steps[simulation.result.steps.length - 1]?.reason ?? 'SecurityEngine evaluation completed.',
+        isBreached ? 'DANGER' : 'COUNTERMEASURE',
+        isGodModeActive
+          ? '⚡ GUDEMODUS AKTIV: Trussel 100% nøytralisert og reflektert via Mirror Jamming.'
+          : (simulation.result.steps[simulation.result.steps.length - 1]?.reason ?? 'SecurityEngine evaluation completed.'),
         attackerIp
       );
 
@@ -398,7 +407,10 @@ export function App() {
       const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
 
       const payloadString = evaluation.payloadStr;
-      const blockContent = `${newId}|${timestamp}|${attackerIp}|${evaluation.threat}|${evaluation.countermeasure}|${evaluation.entropy}|${payloadString}|${prevHash}`;
+      const effectiveCountermeasure = isGodModeActive
+        ? `⚡ GUDEMODUS: Reflektert 100% via Mirror Jamming & Kvantebeskyttelse (${evaluation.countermeasure})`
+        : evaluation.countermeasure;
+      const blockContent = `${newId}|${timestamp}|${attackerIp}|${evaluation.threat}|${effectiveCountermeasure}|${evaluation.entropy}|${payloadString}|${prevHash}`;
       const currentHash = await sha256(blockContent);
 
       const newBlock: ForensicBlock = {
@@ -406,18 +418,19 @@ export function App() {
         timestamp,
         attackerIp,
         threatType: evaluation.threat,
-        threatLevel: evaluation.riskLevel,
+        threatLevel: isGodModeActive ? 'LOW' : evaluation.riskLevel,
         payload: payloadString,
         entropy: Number(evaluation.entropy.toFixed(2)),
-        counterMeasure: evaluation.countermeasure,
-        counterMeasureCode:
-          simulation.result.finalVerdict === 'BREACHED'
-            ? 'BREACH_DETECTED'
-            : evaluation.status === 'ISOLATED'
-            ? 'BLACKOUT_ISOLATION'
-            : evaluation.status === 'LOOPED'
-            ? 'PHANTOM_LOOP'
-            : 'MIRROR_JAM',
+        counterMeasure: effectiveCountermeasure,
+        counterMeasureCode: isGodModeActive
+          ? 'MIRROR_JAM'
+          : isBreached
+          ? 'BREACH_DETECTED'
+          : evaluation.status === 'ISOLATED'
+          ? 'BLACKOUT_ISOLATION'
+          : evaluation.status === 'LOOPED'
+          ? 'PHANTOM_LOOP'
+          : 'MIRROR_JAM',
         previousHash: prevHash,
         currentHash,
       };
@@ -522,7 +535,7 @@ export function App() {
         return [newBlip, ...prevBlips.slice(0, 7)];
       });
     },
-    [addLog, chain, groundedSources, securityNodes, securityEdges, securityDefenses]
+    [addLog, chain, groundedSources, securityNodes, securityEdges, securityDefenses, isGodModeActive]
   );
 
   // Autonomous SOC Defense Loop
@@ -680,6 +693,40 @@ export function App() {
     }, 4000);
   };
 
+  // God Mode Superpower Handlers
+  const handleToggleGodMode = () => {
+    setIsGodModeActive((prev) => {
+      const next = !prev;
+      if (next) {
+        addLog('DEFENSE', '👑 GUDEMODUS AKTIVERT: 100% uovervinnelig skjold, mirror jamming og kvantelås er etablert!', '0.0.0.0');
+        setStats((s) => ({
+          ...s,
+          integrityVerified: true,
+        }));
+      } else {
+        addLog('INFO', '🛡️ Gudemodus deaktivert. Går tilbake til standard autonom kjernebeskyttelse.', '127.0.0.1');
+      }
+      return next;
+    });
+  };
+
+  const handleTriggerEmp = () => {
+    addLog('DANGER', '💥 GLOBAL EMP SJOKKBØLGE UTLØST: All fiendtlig C2-trafikk kuttet momentant. Minnekøen og radaren er renset.', '0.0.0.0');
+    setBlips([]);
+    setIsGodModeModalOpen(false);
+  };
+
+  const handleTriggerMirrorJamming = () => {
+    addLog('COUNTERMEASURE', '🪞 MAKS MIRROR JAMMING: Speilingsintensitet satt til 10/10. Innkommende pakker reflekteres 100% til avsender.', '0.0.0.0');
+    setIsGodModeModalOpen(false);
+  };
+
+  const handleTriggerQuantumLock = () => {
+    handleRotateProgramKey();
+    addLog('DEFENSE', '🔑 KVANTELÅS ETABLERT: Kjerne-minnet er forseglet med Post-Quantum Kyber-1024 algoritme.', '127.0.0.1');
+    setIsGodModeModalOpen(false);
+  };
+
   // Blacklist Unban
   const handleUnbanIp = (ip: string) => {
     setBlacklist((prev) => prev.filter((item) => item.ip !== ip));
@@ -779,10 +826,22 @@ export function App() {
         onOpenAdvisor={() => setIsIncidentAdvisorOpen(true)}
         isAutonomousActive={isAutonomousActive}
         autonomousBlockedCount={autonomousBlockedCount}
+        isGodModeActive={isGodModeActive}
+        onToggleGodMode={handleToggleGodMode}
+        onOpenGodModeModal={() => setIsGodModeModalOpen(true)}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+        {/* War Room Master Overview & Direct Navigation Hub */}
+        <WarRoomOverviewBanner
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          isGodModeActive={isGodModeActive}
+          onToggleGodMode={handleToggleGodMode}
+          isAutonomousActive={isAutonomousActive}
+          totalBlocks={chain.length}
+        />
         {/* War Room SecurityEngine & Topology Studio */}
         {activeTab === 'warroom' && (
           <div className="space-y-6">
@@ -852,11 +911,32 @@ export function App() {
           />
         )}
 
+        {activeTab === 'arena' && (
+          <GodModeBattleArena
+            stats={stats}
+            onUpdateStats={setStats}
+            onTriggerAttackSample={(payload, ip) => processAttack(payload, ip, true)}
+            defaultSubTab="arena"
+          />
+        )}
+
         {activeTab === 'godmode' && (
           <GodModeBattleArena
             stats={stats}
             onUpdateStats={setStats}
             onTriggerAttackSample={(payload, ip) => processAttack(payload, ip, true)}
+            defaultSubTab="config"
+          />
+        )}
+
+        {activeTab === 'report' && (
+          <AutomatedSocReportView
+            stats={stats}
+            chain={chain}
+            blacklist={blacklist}
+            onRotateKey={handleRotateProgramKey}
+            isGodModeActive={isGodModeActive}
+            onSelectTab={setActiveTab}
           />
         )}
 
@@ -996,19 +1076,64 @@ export function App() {
         autonomousBlockedCount={autonomousBlockedCount}
       />
 
+      {/* Gudemodus Master Kontrollsentral & Superkrefter Modal */}
+      <GodModeMasterModal
+        isOpen={isGodModeModalOpen}
+        onClose={() => setIsGodModeModalOpen(false)}
+        isGodModeActive={isGodModeActive}
+        onToggleGodMode={handleToggleGodMode}
+        onTriggerEmp={handleTriggerEmp}
+        onTriggerMirrorJamming={handleTriggerMirrorJamming}
+        onTriggerQuantumLock={handleTriggerQuantumLock}
+        onClearBlacklist={handleClearBlacklist}
+        onOpenArena={() => setActiveTab('arena')}
+        onOpenAdvancedConfig={() => setActiveTab('godmode')}
+      />
+
       {/* Floating Quick Advisor & Field Notes Speed-Dial Dock */}
-      <aside aria-label="Hurtigveileder og notater" className="fixed bottom-5 right-5 z-30 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-cyan-700/60 shadow-xl shadow-slate-950/80">
+      <aside aria-label="Hurtigveileder og notater" className="fixed bottom-5 right-5 z-30 flex items-center gap-1.5 sm:gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-cyan-700/60 shadow-xl shadow-slate-950/80">
+        <button
+          onClick={() => setActiveTab('arena')}
+          title="Hopp direkte til Cyber Arena (Gladiatorkamp)"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-700 to-amber-700 hover:from-rose-600 hover:to-amber-600 text-white font-mono text-xs font-bold shadow-md transition-all cursor-pointer"
+        >
+          <span>⚔️</span>
+          <span className="hidden md:inline">Arena</span>
+        </button>
+
+        <button
+          onClick={() => setIsGodModeModalOpen(true)}
+          title="Åpne Gudemodus Kontrollsenter & Superkrefter"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer shadow-md ${
+            isGodModeActive
+              ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 animate-pulse'
+              : 'bg-slate-800 hover:bg-amber-950/60 text-amber-300 border border-amber-500/50'
+          }`}
+        >
+          <span>👑</span>
+          <span className="hidden md:inline">{isGodModeActive ? 'Gudemodus [PÅ]' : 'Gudemodus'}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('report')}
+          title="Åpne Automatisert SOC Rapport"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-mono text-xs font-bold shadow-md transition-all cursor-pointer"
+        >
+          <span>📑</span>
+          <span className="hidden md:inline">Rapport</span>
+        </button>
+
         <button
           onClick={() => setIsIncidentAdvisorOpen(true)}
           title="Åpne Sanntids Hendelser & Mottiltak (inkl. Autonom SOC Forsvarsmodus)"
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer shadow-md ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer shadow-md ${
             isAutonomousActive
               ? 'bg-emerald-600 hover:bg-emerald-500 text-white animate-pulse'
-              : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white'
+              : 'bg-gradient-to-r from-teal-700 to-emerald-700 hover:from-teal-600 hover:to-emerald-600 text-white'
           }`}
         >
           <span>⚡</span>
-          <span className="hidden sm:inline">Forslag & Tiltak</span>
+          <span className="hidden sm:inline">Tiltak</span>
           {isAutonomousActive && (
             <span className="w-2 h-2 rounded-full bg-white animate-ping" />
           )}
@@ -1020,7 +1145,7 @@ export function App() {
             setIsGuideAdvisorOpen(true);
           }}
           title="Åpne SOC Veileder for god hjelp og forklaringer"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono text-xs font-bold shadow-md transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono text-xs font-bold shadow-md transition-all cursor-pointer"
         >
           <span>🧭</span>
           <span className="hidden sm:inline">Veileder</span>
@@ -1029,7 +1154,7 @@ export function App() {
         <button
           onClick={() => setIsHackerNotesOpen(true)}
           title="Åpne Hacker Notater & Incident Journal"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-mono text-xs font-bold border border-amber-500/40 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-mono text-xs font-bold border border-amber-500/40 transition-all cursor-pointer"
         >
           <span>📝</span>
           <span className="hidden sm:inline">Notater</span>

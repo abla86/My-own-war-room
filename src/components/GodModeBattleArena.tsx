@@ -590,15 +590,23 @@ interface GodModeBattleArenaProps {
   stats: SystemStats;
   onUpdateStats?: React.Dispatch<React.SetStateAction<SystemStats>>;
   onTriggerAttackSample?: (payload: string, ip: string) => void;
+  defaultSubTab?: 'arena' | 'penetration_film' | 'battle_logs' | 'config' | 'custom_creator';
 }
 
 export const GodModeBattleArena: React.FC<GodModeBattleArenaProps> = ({
   stats,
   onUpdateStats,
   onTriggerAttackSample,
+  defaultSubTab = 'arena',
 }) => {
   // Navigation inside God Mode (Arena, Film Simulator, Battle Logs, Config, Creator)
-  const [subTab, setSubTab] = useState<'arena' | 'penetration_film' | 'battle_logs' | 'config' | 'custom_creator'>('arena');
+  const [subTab, setSubTab] = useState<'arena' | 'penetration_film' | 'battle_logs' | 'config' | 'custom_creator'>(defaultSubTab);
+
+  useEffect(() => {
+    if (defaultSubTab) {
+      setSubTab(defaultSubTab);
+    }
+  }, [defaultSubTab]);
 
   // God Mode Configuration State (Everything Toggleable & Adjustable)
   const [config, setConfig] = useState<GodModeConfig>(DEFAULT_GOD_MODE_CONFIG);

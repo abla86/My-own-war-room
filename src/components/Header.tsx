@@ -56,6 +56,9 @@ interface HeaderProps {
   onOpenAdvisor?: () => void;
   isAutonomousActive?: boolean;
   autonomousBlockedCount?: number;
+  isGodModeActive?: boolean;
+  onToggleGodMode?: () => void;
+  onOpenGodModeModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -81,14 +84,19 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAdvisor,
   isAutonomousActive,
   autonomousBlockedCount,
+  isGodModeActive,
+  onToggleGodMode,
+  onOpenGodModeModal,
 }) => {
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
+    { id: 'arena', label: 'Cyber Arena (Kamparena) ⚔️', short: 'Arena ⚔️', icon: Swords },
+    { id: 'godmode', label: 'Gudemodus & Overherredømme ⚡', short: 'Gudemodus ⚡', icon: Crown },
+    { id: 'report', label: 'Automatisert SOC Rapport 📑', short: 'Rapport 📑', icon: FileText },
     { id: 'health', label: 'Systemhelse & Diagnostikk (eBPF & Kjerne)', short: 'Systemhelse 🩺', icon: HeartPulse },
-    { id: 'timeline', label: 'Threat Timeline (Recharts Sanntid)', short: 'Threat Timeline', icon: TrendingUp },
+    { id: 'timeline', label: 'Threat Timeline (Recharts Sanntid)', short: 'Timeline', icon: TrendingUp },
     { id: 'warroom', label: 'SecurityEngine Kjerne & Topologi', short: 'Topologi & Motor', icon: Terminal },
     { id: 'map', label: 'Globalt Trusselkart (Verden)', short: 'Trusselkart', icon: Globe },
-    { id: 'godmode', label: 'Gudemodus & Kamparena (Gladiator)', short: 'Gudemodus ⚡', icon: Crown },
     { id: 'simulator', label: 'Angrepssimulator (Matrise)', short: 'Simulator', icon: Activity },
     { id: 'forensics', label: 'Forensisk Hash-Kjede (WORM)', short: 'Hash-Kjede', icon: ShieldCheck },
     { id: 'blacklist', label: 'Svarteliste & Isolasjon', short: 'Svarteliste', icon: Lock },
@@ -283,18 +291,64 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Global Controls & Sync Security Definitions Button */}
+        {/* Global Controls, Arena, GodMode & Sync Security Definitions */}
         <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+          {/* Quick Arena Button */}
+          <button
+            id="btn-header-arena"
+            onClick={() => onSelectTab('arena')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono font-semibold transition-all cursor-pointer shadow-sm ${
+              activeTab === 'arena'
+                ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white border-rose-400 shadow-rose-950/60'
+                : 'bg-slate-900 hover:bg-rose-950/50 border-rose-800/60 text-rose-300 hover:text-rose-100'
+            }`}
+            title="Gå direkte til Cyber Arena (Rød vs Blå gladiator-kamp)"
+          >
+            <Swords className="w-3.5 h-3.5 text-rose-400" />
+            <span>Arena ⚔️</span>
+          </button>
+
+          {/* Master God Mode Button */}
+          <button
+            id="btn-header-godmode"
+            onClick={onOpenGodModeModal || onToggleGodMode}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-mono font-bold transition-all shadow-md cursor-pointer ${
+              isGodModeActive
+                ? 'bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 text-slate-950 border-amber-300 shadow-amber-950 animate-pulse'
+                : 'bg-slate-900 hover:bg-amber-950/40 border-amber-500/60 text-amber-300 hover:text-amber-100'
+            }`}
+            title="Gudemodus: Åpne overherredømme kontrollpanel og aktiver uovervinnelig beskyttelse"
+          >
+            <Crown className={`w-3.5 h-3.5 ${isGodModeActive ? 'text-slate-950' : 'text-amber-400'}`} />
+            <span>GUDEMODUS: <strong className={isGodModeActive ? 'text-slate-950' : 'text-amber-300'}>{isGodModeActive ? 'PÅ ⚡' : 'AV'}</strong></span>
+          </button>
+
+          {/* Quick Report Button */}
+          <button
+            id="btn-header-report"
+            onClick={() => onSelectTab('report')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono font-semibold transition-all cursor-pointer shadow-sm ${
+              activeTab === 'report'
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-purple-400 shadow-purple-950/60'
+                : 'bg-slate-900 hover:bg-purple-950/50 border-purple-800/60 text-purple-300 hover:text-purple-100'
+            }`}
+            title="Se og generer full automatisert SOC-revisjonsrapport"
+          >
+            <FileText className="w-3.5 h-3.5 text-purple-400" />
+            <span className="hidden sm:inline">Rapport 📑</span>
+          </button>
+
           {/* Sync Security Definitions Button */}
           <button
             id="btn-sync-security-definitions"
             onClick={onSyncDefinitions}
             disabled={isSyncingDefinitions}
             title="Hent oppdaterte trusselsignaturer, YARA-regler og CVE-databaser fra eksterne feeds"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-md border text-xs font-mono font-semibold transition-all bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 hover:from-cyan-900 hover:to-slate-900 border-cyan-600/80 text-cyan-200 shadow-md shadow-cyan-950/50 disabled:opacity-60"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-mono font-semibold transition-all bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 hover:from-cyan-900 hover:to-slate-900 border-cyan-600/80 text-cyan-200 shadow-md shadow-cyan-950/50 disabled:opacity-60"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isSyncingDefinitions ? 'animate-spin' : ''}`} />
-            <span>{isSyncingDefinitions ? 'Synkroniserer...' : 'Sync Security Definitions'}</span>
+            <span className="hidden md:inline">{isSyncingDefinitions ? 'Synkroniserer...' : 'Sync Definisjoner'}</span>
+            <span className="md:hidden">Sync</span>
           </button>
 
           {/* Network Switch */}
