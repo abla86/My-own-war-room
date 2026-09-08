@@ -38,6 +38,7 @@ import {
   BattleLogEntry,
   BattleReport
 } from '../types';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 interface CyberArenaVisualizerProps {
   fighter1: CyberGladiator;
@@ -1048,36 +1049,44 @@ export const CyberArenaVisualizer: React.FC<CyberArenaVisualizerProps> = ({
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
               Aktive Forsvarslag (Gudemodus):
             </span>
-            <span
-              className={`px-2 py-0.5 rounded border text-[10px] ${
-                config.mirrorJammingEnabled
-                  ? 'bg-cyan-950/80 text-cyan-300 border-cyan-700'
-                  : 'bg-slate-900 text-slate-500 border-slate-800 line-through'
-              }`}
-            >
-              Mirror Jamming (Nivå {config.mirrorJammingIntensity})
-            </span>
-            <span
-              className={`px-2 py-0.5 rounded border text-[10px] ${
-                config.ddosMitigationEnabled
-                  ? 'bg-blue-950/80 text-blue-300 border-blue-700'
-                  : 'bg-rose-950/80 text-rose-300 border-rose-700 animate-pulse'
-              }`}
-            >
-              {config.ddosMitigationEnabled ? 'Anycast BGP Scrubbing' : 'DDoS DEAKTIVERT'}
-            </span>
-            <span
-              className={`px-2 py-0.5 rounded border text-[10px] ${
-                config.quantumKyberEnvelope
-                  ? 'bg-purple-950/80 text-purple-300 border-purple-700'
-                  : 'bg-slate-900 text-slate-500 border-slate-800'
-              }`}
-            >
-              Kyber-1024 Barriere
-            </span>
-            <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-400">
-              Entropi-grense: {config.entropyThreshold.toFixed(2)} bits
-            </span>
+            <HackerIntelTooltip intelId="mirror_jamming">
+              <span
+                className={`px-2 py-0.5 rounded border text-[10px] cursor-help ${
+                  config.mirrorJammingEnabled
+                    ? 'bg-cyan-950/80 text-cyan-300 border-cyan-700'
+                    : 'bg-slate-900 text-slate-500 border-slate-800 line-through'
+                }`}
+              >
+                Mirror Jamming (Nivå {config.mirrorJammingIntensity})
+              </span>
+            </HackerIntelTooltip>
+            <HackerIntelTooltip intelId="ebpf_xdp_wall">
+              <span
+                className={`px-2 py-0.5 rounded border text-[10px] cursor-help ${
+                  config.ddosMitigationEnabled
+                    ? 'bg-blue-950/80 text-blue-300 border-blue-700'
+                    : 'bg-rose-950/80 text-rose-300 border-rose-700 animate-pulse'
+                }`}
+              >
+                {config.ddosMitigationEnabled ? 'Anycast BGP Scrubbing' : 'DDoS DEAKTIVERT'}
+              </span>
+            </HackerIntelTooltip>
+            <HackerIntelTooltip intelId="kyber_quantum">
+              <span
+                className={`px-2 py-0.5 rounded border text-[10px] cursor-help ${
+                  config.quantumKyberEnvelope
+                    ? 'bg-purple-950/80 text-purple-300 border-purple-700'
+                    : 'bg-slate-900 text-slate-500 border-slate-800'
+                }`}
+              >
+                Kyber-1024 Barriere
+              </span>
+            </HackerIntelTooltip>
+            <HackerIntelTooltip intelId="shannon_entropy">
+              <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-400 cursor-help">
+                Entropi-grense: {config.entropyThreshold.toFixed(2)} bits
+              </span>
+            </HackerIntelTooltip>
           </div>
 
           <button

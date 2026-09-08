@@ -20,6 +20,7 @@ import {
 import { ForensicBlock, ExportFormat } from '../types';
 import { sha256 } from '../utils/crypto';
 import { playVerifyChime } from '../utils/audio';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 interface ForensicChainProps {
   chain: ForensicBlock[];
@@ -104,25 +105,29 @@ export const ForensicChain: React.FC<ForensicChainProps> = ({
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-mono font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-              <Link2 className="w-4 h-4 text-emerald-400" />
-              Kryptografisk WORM Bevis-Logg (Write Once, Read Many)
-            </h2>
+            <HackerIntelTooltip intelId="worm_integrity">
+              <h2 className="text-sm font-mono font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2 cursor-help">
+                <Link2 className="w-4 h-4 text-emerald-400" />
+                Kryptografisk WORM Bevis-Logg (Write Once, Read Many)
+              </h2>
+            </HackerIntelTooltip>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
               Hver hendelse forsegles med SHA-256 hash-kjeding. Ethvert forsøk på å endre historiske bevis oppdages umiddelbart.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              id="btn-verify-chain"
-              onClick={handleVerifyChain}
-              disabled={isVerifying}
-              className="py-1.5 px-3.5 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 font-mono text-xs flex items-center gap-2 transition-all disabled:opacity-50 shadow-sm"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{isVerifying ? 'Verifiserer Kjede...' : 'Verifiser Kjedeintegritet'}</span>
-            </button>
+            <HackerIntelTooltip intelId="worm_integrity">
+              <button
+                id="btn-verify-chain"
+                onClick={handleVerifyChain}
+                disabled={isVerifying}
+                className="py-1.5 px-3.5 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 font-mono text-xs flex items-center gap-2 transition-all disabled:opacity-50 shadow-sm cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{isVerifying ? 'Verifiserer Kjede...' : 'Verifiser Kjedeintegritet'}</span>
+              </button>
+            </HackerIntelTooltip>
 
             <div className="flex items-center gap-1">
               <button

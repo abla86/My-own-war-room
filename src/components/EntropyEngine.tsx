@@ -10,6 +10,7 @@ import {
   Layers
 } from 'lucide-react';
 import { calculateShannonEntropy } from '../utils/crypto';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 export const EntropyEngine: React.FC = () => {
   const [inputText, setInputText] = useState<string>(
@@ -64,9 +65,11 @@ export const EntropyEngine: React.FC = () => {
             <Binary className="w-4 h-4 text-purple-400" />
             Shannon Entropi Analyse-Motor (Zero-Day Deteksjon)
           </h2>
-          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">
-            H(X) = -Σ P(x) log₂ P(x)
-          </span>
+          <HackerIntelTooltip intelId="shannon_entropy">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 cursor-help">
+              H(X) = -Σ P(x) log₂ P(x)
+            </span>
+          </HackerIntelTooltip>
         </div>
         <p className="text-xs text-slate-400 font-mono">
           Tradisjonelle brannmurer ser kun etter kjente tekstmønstre. WPWW WarRoom analyserer matematisk informasjons-tetthet (Shannon Entropi) for å nøytralisere obfuskerte zero-day payloads og polymorfiske kodesegmenter før de eksekveres.
@@ -138,38 +141,40 @@ export const EntropyEngine: React.FC = () => {
             </div>
 
             {/* Big Entropy Meter Badge */}
-            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center my-2">
-              <div className="text-4xl font-bold font-mono text-purple-400">
-                {entropy.toFixed(3)}
-              </div>
-              <div className="text-xs font-mono text-slate-400 mt-1">
-                Shannon Informasjons-Tetthet
-              </div>
+            <HackerIntelTooltip intelId="shannon_entropy" className="w-full">
+              <div className="w-full p-4 rounded-xl bg-slate-900 border border-slate-800 text-center my-2 cursor-help hover:border-purple-600/50 transition-colors">
+                <div className="text-4xl font-bold font-mono text-purple-400">
+                  {entropy.toFixed(3)}
+                </div>
+                <div className="text-xs font-mono text-slate-400 mt-1">
+                  Shannon Informasjons-Tetthet (Bits/Byte)
+                </div>
 
-              {/* Progress Gauge Bar */}
-              <div className="w-full bg-slate-950 h-3 rounded-full mt-3 overflow-hidden p-0.5 border border-slate-800 relative">
-                <div
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    entropy > 5.2 ? 'bg-gradient-to-r from-amber-500 to-rose-500' :
-                    entropy > 4.0 ? 'bg-gradient-to-r from-cyan-500 to-purple-500' :
-                    'bg-emerald-500'
-                  }`}
-                  style={{ width: `${Math.min(100, (entropy / 8.0) * 100)}%` }}
-                ></div>
-                {/* 5.2 threshold indicator marker */}
-                <div
-                  className="absolute top-0 bottom-0 w-0.5 bg-rose-400 z-10"
-                  style={{ left: `${(5.2 / 8.0) * 100}%` }}
-                  title="5.20 Zero-Day Terskel"
-                ></div>
-              </div>
+                {/* Progress Gauge Bar */}
+                <div className="w-full bg-slate-950 h-3 rounded-full mt-3 overflow-hidden p-0.5 border border-slate-800 relative">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      entropy > 5.2 ? 'bg-gradient-to-r from-amber-500 to-rose-500' :
+                      entropy > 4.0 ? 'bg-gradient-to-r from-cyan-500 to-purple-500' :
+                      'bg-emerald-500'
+                    }`}
+                    style={{ width: `${Math.min(100, (entropy / 8.0) * 100)}%` }}
+                  ></div>
+                  {/* 5.2 threshold indicator marker */}
+                  <div
+                    className="absolute top-0 bottom-0 w-0.5 bg-rose-400 z-10"
+                    style={{ left: `${(5.2 / 8.0) * 100}%` }}
+                    title="5.20 Zero-Day Terskel"
+                  ></div>
+                </div>
 
-              <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
-                <span>0.0 (Lav)</span>
-                <span className="text-rose-400">Terskel: 5.20</span>
-                <span>8.0 (Maks)</span>
+                <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                  <span>0.0 (Lav)</span>
+                  <span className="text-rose-400">Terskel: 5.20</span>
+                  <span>8.0 (Maks)</span>
+                </div>
               </div>
-            </div>
+            </HackerIntelTooltip>
 
             {/* Verdict Card */}
             <div className={`p-3.5 rounded-lg border text-xs font-mono mt-3 ${

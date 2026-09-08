@@ -10,7 +10,11 @@ import {
   Cpu, 
   HelpCircle,
   Lightbulb,
-  Crosshair
+  Crosshair,
+  Code2,
+  FileCode,
+  Flame,
+  Bug
 } from 'lucide-react';
 import { HACKER_INTEL_CATALOG, HackerIntel } from '../data/hackerIntelCatalog';
 
@@ -160,17 +164,29 @@ export const HackerIntelTooltip: React.FC<HackerIntelTooltipProps> = ({
           {/* Glowing Top Cyber Line */}
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
 
-          {/* Header row: Badge, Category, Level */}
+          {/* Header row: Badge, Category, Level, CVE */}
           <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-800/80">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <span className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold tracking-wider border ${
-                isRedTeam 
+                intel.category === 'RED_TEAM'
                   ? 'bg-rose-950/80 text-rose-300 border-rose-800' 
-                  : isCrypto
+                  : intel.category === 'MALWARE'
+                  ? 'bg-red-950/80 text-red-300 border-red-700'
+                  : intel.category === 'FIREWALL_DEFENSE'
+                  ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
+                  : intel.category === 'CRYPTO'
                   ? 'bg-purple-950/80 text-purple-300 border-purple-800'
+                  : intel.category === 'PROTOCOL'
+                  ? 'bg-amber-950/80 text-amber-300 border-amber-800'
                   : 'bg-cyan-950/80 text-cyan-300 border-cyan-800'
               }`}>
-                {isRedTeam ? '🔴 RED TEAM' : isCrypto ? '🔑 KRYPTO' : '🔵 BLUE TEAM'}
+                {intel.category === 'RED_TEAM' && '🔴 RED TEAM'}
+                {intel.category === 'MALWARE' && '☣️ VIRUS / MALWARE'}
+                {intel.category === 'FIREWALL_DEFENSE' && '🛡️ MUR / FORSVAR'}
+                {intel.category === 'CRYPTO' && '🔑 KRYPTO'}
+                {intel.category === 'PROTOCOL' && '🌐 PROTOKOLL'}
+                {intel.category === 'BLUE_TEAM' && '🔵 BLUE TEAM'}
+                {intel.category === 'CONCEPT' && '💡 KONSEPT'}
               </span>
 
               {intel.level && (
@@ -178,10 +194,16 @@ export const HackerIntelTooltip: React.FC<HackerIntelTooltipProps> = ({
                   {intel.level}
                 </span>
               )}
+
+              {intel.cveOrRef && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800">
+                  {intel.cveOrRef}
+                </span>
+              )}
             </div>
 
             {intel.mitreTactic && (
-              <span className="text-[9px] text-amber-300/90 truncate max-w-[140px]" title={intel.mitreTactic}>
+              <span className="text-[9px] text-amber-300/90 truncate max-w-[130px]" title={intel.mitreTactic}>
                 {intel.mitreTactic}
               </span>
             )}
@@ -223,13 +245,43 @@ export const HackerIntelTooltip: React.FC<HackerIntelTooltipProps> = ({
             </div>
           )}
 
+          {/* Code Snippet if present (Komplett Kode for Murer, Virus og Forsvar) */}
+          {intel.codeSnippet && (
+            <div className="mb-2 p-2 rounded bg-slate-900 border border-slate-800 text-[10px]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="flex items-center gap-1 font-bold text-cyan-300">
+                  <Code2 className="w-3 h-3 text-cyan-400" />
+                  <span>{intel.codeSnippet.filename || 'Kode-snippet'}</span>
+                  <span className="text-[9px] uppercase px-1 py-0.2 rounded bg-slate-800 text-slate-400">
+                    {intel.codeSnippet.language}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => handleCopyCommand(e, intel.codeSnippet!.code)}
+                  className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[9px] flex items-center gap-1 transition-colors cursor-pointer"
+                  title="Kopier hele koden"
+                >
+                  {copied ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5" />}
+                  <span>{copied ? 'Kopiert' : 'Kopier kode'}</span>
+                </button>
+              </div>
+              {intel.codeSnippet.description && (
+                <p className="text-[10px] text-slate-400 mb-1 font-sans">{intel.codeSnippet.description}</p>
+              )}
+              <div className="max-h-28 overflow-y-auto bg-slate-950 p-1.5 rounded border border-slate-800 font-mono text-[9px] text-emerald-300 leading-tight">
+                <pre><code>{intel.codeSnippet.code}</code></pre>
+              </div>
+            </div>
+          )}
+
           {/* Terminal Command Snippet with 1-click Copy */}
           {intel.terminalCommand && (
             <div className="mt-2 pt-2 border-t border-slate-800/80">
               <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
                 <span className="flex items-center gap-1">
                   <Terminal className="w-3 h-3 text-cyan-400" />
-                  <span>Kommando / Verktøy: <strong>{intel.toolName || 'CLI'}</strong></span>
+                  <span>Kommando: <strong>{intel.toolName || 'CLI'}</strong></span>
                 </span>
                 <button
                   type="button"

@@ -11,6 +11,7 @@ import {
   AlertTriangle 
 } from 'lucide-react';
 import { BlacklistedIp } from '../types';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 interface BlacklistManagerProps {
   blacklist: BlacklistedIp[];
@@ -49,12 +50,14 @@ export const BlacklistManager: React.FC<BlacklistManagerProps> = ({
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-mono font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-              <UserX className="w-4 h-4 text-rose-400" />
-              Blackout Isolasjon & Svarteliste-Administrasjon
-            </h2>
+            <HackerIntelTooltip intelId="blackout_protocol">
+              <h2 className="text-sm font-mono font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2 cursor-help">
+                <UserX className="w-4 h-4 text-rose-400" />
+                Blackout Isolasjon & Svarteliste-Administrasjon
+              </h2>
+            </HackerIntelTooltip>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Permanente karantene-blokkeringer. IP-adresser her nektes enhver HTTP-tilkobling (HTTP 403 Access Denied).
+              Permanente karantene-blokkeringer og eBPF/BGP null-routing. IP-adresser her nektes enhver nettverkstilkobling.
             </p>
           </div>
 

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { SystemStats } from '../types';
 import { encryptProgramData, encryptOutData } from '../utils/crypto';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 interface SecurityLayersPanelProps {
   stats: SystemStats;
@@ -176,36 +177,46 @@ export const SecurityLayersPanel: React.FC<SecurityLayersPanelProps> = ({
                 ? 'text-emerald-400 bg-emerald-950 border-emerald-700' 
                 : 'text-amber-400 bg-amber-950 border-amber-700';
 
+              const intelId = isProgram 
+                ? 'programdata_crypto' 
+                : isOutdata 
+                ? 'outdata_crypto' 
+                : isWorm 
+                ? 'worm_integrity' 
+                : 'waf_nextgen';
+
               return (
-                <div key={layer.id} className={`p-4 rounded-xl border ${borderClass} relative overflow-hidden transition-all hover:border-cyan-500/50`}>
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`p-2 rounded-lg border ${iconClass}`}>
-                        {isProgram ? <Lock className="w-4 h-4" /> : isOutdata ? <Send className="w-4 h-4" /> : isWorm ? <CheckCircle2 className="w-4 h-4" /> : <Radio className="w-4 h-4" />}
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-mono font-bold text-slate-100">
-                          {layer.name}
-                        </h4>
-                        <div className="text-[11px] font-mono text-cyan-300">
-                          {layer.cipher}
+                <HackerIntelTooltip key={layer.id} intelId={intelId} className="w-full">
+                  <div className={`w-full p-4 rounded-xl border ${borderClass} relative overflow-hidden transition-all hover:border-cyan-500/50`}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`p-2 rounded-lg border ${iconClass}`}>
+                          {isProgram ? <Lock className="w-4 h-4" /> : isOutdata ? <Send className="w-4 h-4" /> : isWorm ? <CheckCircle2 className="w-4 h-4" /> : <Radio className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-mono font-bold text-slate-100">
+                            {layer.name}
+                          </h4>
+                          <div className="text-[11px] font-mono text-cyan-300">
+                            {layer.cipher}
+                          </div>
                         </div>
                       </div>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400 font-bold">
+                        {layer.status}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400 font-bold">
-                      {layer.status}
-                    </span>
-                  </div>
 
-                  <p className="text-xs text-slate-300 font-mono mt-2 leading-relaxed">
-                    {layer.description}
-                  </p>
+                    <p className="text-xs text-slate-300 font-mono mt-2 leading-relaxed">
+                      {layer.description}
+                    </p>
 
-                  <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
-                    <span>Telemetri:</span>
-                    <span className="text-slate-200 font-semibold">{layer.metrics}</span>
+                    <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                      <span>Telemetri:</span>
+                      <span className="text-slate-200 font-semibold">{layer.metrics}</span>
+                    </div>
                   </div>
-                </div>
+                </HackerIntelTooltip>
               );
             })}
           </div>
