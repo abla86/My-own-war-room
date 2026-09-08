@@ -365,4 +365,91 @@ export interface CodeSuggestion {
   };
 }
 
+export interface CyberScoreState {
+  redTeamScore: number;
+  blueTeamScore: number;
+  redTeamWins: number;
+  blueTeamWins: number;
+  draws: number;
+  totalDamageDealtByRed: number;
+  totalDamageBlockedByBlue: number;
+  criticalExploitsExecuted: number;
+  zeroDayBreaches: number;
+  attacksRepelled: number;
+  lastWinner: 'RED_TEAM' | 'BLUE_TEAM' | 'DRAW' | null;
+  winStreak: { team: 'RED_TEAM' | 'BLUE_TEAM' | null; count: number };
+}
+
+export interface HeatmapCell {
+  id: string;
+  rowLabel: string;
+  colLabel: string;
+  intensity: number; // 0 to 100
+  valueDisplay: string;
+  threatLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'SAFE';
+  details: string;
+  payloadSnippet?: string;
+}
+
+export interface HeatmapMatrixData {
+  title: string;
+  dimension: string;
+  cells: HeatmapCell[];
+}
+
+export type NoteCategory = 
+  | 'INCIDENT' 
+  | 'REVERSE_ENG' 
+  | 'IOC_LIST' 
+  | 'YARA_RULE' 
+  | 'PENTEST_LOG' 
+  | 'INTEL' 
+  | 'DEFENSE_PLAYBOOK';
+
+export type NoteSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
+
+export interface HackerNote {
+  id: string;
+  title: string;
+  category: NoteCategory;
+  severity: NoteSeverity;
+  tags: string[];
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+  content: string;
+  codeSnippet?: string;
+  codeLanguage?: string;
+  pinned?: boolean;
+}
+
+export interface SystemSubsystemHealth {
+  id: string;
+  name: string;
+  status: 'OPTIMAL' | 'HEALTHY' | 'DEGRADED' | 'WARNING' | 'CRITICAL';
+  latencyMs: number;
+  metricLabel: string;
+  metricValue: string | number;
+  description: string;
+  lastChecked: string;
+}
+
+export interface SystemHealthState {
+  overallScore: number; // 0 - 100%
+  overallStatus: 'OPTIMAL' | 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
+  cpuLoadPercent: number;
+  memoryUsedMb: number;
+  memoryTotalMb: number;
+  networkThroughputMbps: number;
+  activeSocketsCount: number;
+  wormChainLength: number;
+  wormIntegrityStatus: 'VERIFIED' | 'TAMPERED';
+  sqliteWalSizeBytes: number;
+  entropyLatencyMs: number;
+  subsystems: SystemSubsystemHealth[];
+  lastDiagnosticsRun: string;
+  uptimeSeconds: number;
+}
+
+
 

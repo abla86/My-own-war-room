@@ -24,7 +24,10 @@ import {
   Lightbulb,
   GraduationCap,
   Search,
-  Award
+  Award,
+  HeartPulse,
+  BookOpen,
+  FileText
 } from 'lucide-react';
 import { SystemStats } from '../types';
 import { HackerIntelTooltip } from './HackerIntelTooltip';
@@ -47,6 +50,8 @@ interface HeaderProps {
   onOpenAcademy: () => void;
   onOpenThreatSearch: () => void;
   onOpenTraining: () => void;
+  onOpenNotes?: () => void;
+  onOpenGuide?: (topic?: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -67,9 +72,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAcademy,
   onOpenThreatSearch,
   onOpenTraining,
+  onOpenNotes,
+  onOpenGuide,
 }) => {
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
+    { id: 'health', label: 'Systemhelse & Diagnostikk (eBPF & Kjerne)', short: 'Systemhelse 🩺', icon: HeartPulse },
     { id: 'timeline', label: 'Threat Timeline (Recharts Sanntid)', short: 'Threat Timeline', icon: TrendingUp },
     { id: 'warroom', label: 'SecurityEngine Kjerne & Topologi', short: 'Topologi & Motor', icon: Terminal },
     { id: 'map', label: 'Globalt Trusselkart (Verden)', short: 'Trusselkart', icon: Globe },
@@ -143,6 +151,32 @@ export const Header: React.FC<HeaderProps> = ({
             <Award className="w-3.5 h-3.5 text-emerald-400" />
             <span>🎯 Walkthrough & Trening</span>
           </button>
+
+          {/* Ethical Hacker Notes Modal Trigger */}
+          {onOpenNotes && (
+            <button
+              id="btn-open-hacker-notes"
+              onClick={onOpenNotes}
+              title="Åpne Etiske Hacker Notater & SOC Feltjournal (YARA, IOC og Triage)"
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-950 to-slate-900 hover:from-amber-900 hover:to-slate-800 text-amber-300 px-2.5 py-1 rounded-md border border-amber-600/70 font-mono text-xs font-bold transition-all shadow-sm shadow-amber-950 cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-400" />
+              <span>📝 Notater</span>
+            </button>
+          )}
+
+          {/* SOC Cyberguide & Veileder Trigger */}
+          {onOpenGuide && (
+            <button
+              id="btn-open-cyber-guide"
+              onClick={() => onOpenGuide('quickstart')}
+              title="Åpne SOC Veileder & Cyberguide for pedagogisk hjelp og forklaringer"
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-cyan-950 to-blue-950 hover:from-cyan-900 hover:to-blue-900 text-cyan-200 px-2.5 py-1 rounded-md border border-cyan-500/80 font-mono text-xs font-bold transition-all shadow-sm shadow-cyan-950 cursor-pointer animate-pulse"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
+              <span>🧭 Veileder</span>
+            </button>
+          )}
 
           {/* Quick Ethical Hacker Academy & HUD Trigger */}
           <button

@@ -209,12 +209,15 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
   const [currentLayerIdx, setCurrentLayerIdx] = useState<number>(0);
   const [simulationStatus, setSimulationStatus] = useState<'IDLE' | 'SIMULATING' | 'DEFENSE_WON' | 'BREACH_SUCCESS'>('IDLE');
   
+  // Real-time Scenario Balance Mode
+  const [simulationScenario, setSimulationScenario] = useState<'BALANCED' | 'VIRUS_BREACH' | 'DEFENSE_WIN' | 'GOD_MODE'>('BALANCED');
+
   // Real-time Hot-Modding Parameters (Live In-Battle modification)
   // Side 1: Brannmur
   const [firewallPower, setFirewallPower] = useState<number>(config.dpiWorkerCores * 4 + (config.quantumKyberEnvelope ? 30 : 0));
   const [mirrorJammingLevel, setMirrorJammingLevel] = useState<number>(config.mirrorJammingIntensity);
   const [entropyCutoff, setEntropyCutoff] = useState<number>(config.entropyThreshold);
-  const [godModeActive, setGodModeActive] = useState<boolean>(true);
+  const [godModeActive, setGodModeActive] = useState<boolean>(false);
 
   // Side 2: Virus / Angriper
   const [virusName, setVirusName] = useState<string>('MutaMorph-ZeroDay v9');
@@ -310,10 +313,8 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
 
     const currentLayer = layers[currentLayerIdx];
     
-    // Check if God Mode is active
-    // If God Mode is ACTIVE, the defense stops everything early (impervious at Layer 1/2)
-    if (godModeActive) {
-      // In Full God Mode, Layer 1 & 2 stop 100% of probes cold
+    // Check scenario modes
+    if (simulationScenario === 'GOD_MODE' || godModeActive) {
       const updatedLayers = [...layers];
       updatedLayers[currentLayerIdx] = {
         ...currentLayer,
@@ -331,8 +332,6 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
       setSimulationStatus('DEFENSE_WON');
       setIsPlaying(false);
       setOverallPenetrationDepth(Math.round((currentLayerIdx / layers.length) * 100));
-
-      // Record in battle log
       recordClashEvent(true, 'Full Gudemodus Autonom Barriere (Ugjennomtrengelig)', '0% Penetrasjon / 100% Blokkert');
       return;
     }
@@ -341,9 +340,18 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
     const effectiveDefense = firewallPower + (mirrorJammingLevel * 3);
     const effectiveAttack = virusAttack + (virusEntropy * 4) + (virusStealth / 2);
 
-    // If attack overcomes current layer defense
-    const breachChance = (effectiveAttack - effectiveDefense) / 100 + 0.3;
-    const isLayerBreached = Math.random() < breachChance;
+    // Calculate breach probability according to chosen scenario
+    let isLayerBreached = false;
+    if (simulationScenario === 'VIRUS_BREACH') {
+      isLayerBreached = true;
+    } else if (simulationScenario === 'DEFENSE_WIN') {
+      // Breaches layer 1, but stops at layer 2 or 3
+      isLayerBreached = currentLayerIdx < 1;
+    } else {
+      // BALANCED: Both sides have great and realistic chances!
+      const breachChance = Math.min(0.80, Math.max(0.25, (effectiveAttack - effectiveDefense) / 100 + 0.52));
+      isLayerBreached = Math.random() < breachChance;
+    }
 
     const updatedLayers = [...layers];
 
@@ -358,7 +366,7 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
 
       const newDepth = Math.round(((currentLayerIdx + 1) / layers.length) * 100);
       setOverallPenetrationDepth(newDepth);
-      setFlawSeverityFound((prev) => Math.min(100, prev + 20));
+      setFlawSeverityFound((prev) => Math.min(100, prev + 25));
 
       setSimLogs((prev) => [
         ...prev,
@@ -368,7 +376,7 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
 
       setCurrentLayerIdx((prev) => prev + 1);
     } else if (isLayerBreached && currentLayerIdx === layers.length - 1) {
-      // Breached final layer 4 (Rare, only if virus heavily buffed)
+      // Breached final layer 4: VIRUS WINS!
       updatedLayers[currentLayerIdx] = {
         ...currentLayer,
         status: 'BREACHED',
@@ -376,17 +384,19 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
       };
       setLayers(updatedLayers);
       setOverallPenetrationDepth(100);
+      setFlawSeverityFound(98);
       setSimulationStatus('BREACH_SUCCESS');
       setIsPlaying(false);
 
       setSimLogs((prev) => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] 🚨 FULL SYSTEMGJENNOMTRENGNING! ${virusName} overvant alle 4 forsvarslag!`,
+        `[${new Date().toLocaleTimeString()}] 🚨 FULL SYSTEMGJENNOMTRENGNING! RØDT LAG (VIRUS) VANT KAMPEN!`,
+        `[${new Date().toLocaleTimeString()}] 👑 ${virusName} overvant alle 4 forsvarslag! Root-tilgang oppnådd og bevis eksfiltrert.`,
       ]);
 
-      recordClashEvent(false, 'Kritisk Zero-Day ROP Exploit', '100% Penetrasjon');
+      recordClashEvent(false, 'Kritisk Zero-Day ROP Exploit', '100% Penetrasjon / Rødt Lag Seier');
     } else {
-      // Layer successfully BLOCKED the virus
+      // Layer successfully BLOCKED the virus: DEFENSE WINS!
       updatedLayers[currentLayerIdx] = {
         ...currentLayer,
         status: 'BLOCKED',
@@ -397,14 +407,14 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
       setSimLogs((prev) => [
         ...prev,
         `[${new Date().toLocaleTimeString()}] 🛡️ ANGREP STOPPET: ${currentLayer.name} stoppet ${virusName} med [${currentLayer.techName}]!`,
-        `[${new Date().toLocaleTimeString()}] 🔒 Forsvarer seiret! Angrepsvektor isolert i sandboks.`,
+        `[${new Date().toLocaleTimeString()}] 🔒 Blått Lag (Brannmur) seiret! Angrepsvektor isolert i sandboks.`,
       ]);
 
       setSimulationStatus('DEFENSE_WON');
       setIsPlaying(false);
       setOverallPenetrationDepth(Math.round((currentLayerIdx / layers.length) * 100));
 
-      recordClashEvent(true, `${currentLayer.techName} Refleksjon`, `${Math.round(effectiveDefense)} vs ${Math.round(effectiveAttack)} Kraft`);
+      recordClashEvent(true, `${currentLayer.techName} Refleksjon`, `${Math.round(effectiveDefense)} vs ${Math.round(effectiveAttack)} Kraft / Blått Lag Seier`);
     }
   };
 
@@ -577,25 +587,37 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
             </div>
           </div>
 
-          {/* God Mode Impervious Badge */}
-          <div className="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-amber-500/40">
-            <Crown className="w-4 h-4 text-amber-400" />
-            <div className="text-left">
-              <div className="text-[10px] text-amber-400 font-bold uppercase">Full Gudemodus</div>
-              <div className="text-[11px] text-slate-200 font-semibold">
-                {godModeActive ? '🛡️ 100% Ugjennomtrengelig' : '⚙️ Egendefinert (Modifiserbar)'}
-              </div>
-            </div>
-            <button
-              onClick={() => setGodModeActive(!godModeActive)}
-              className={`ml-2 px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                godModeActive 
-                  ? 'bg-amber-500 text-slate-950 shadow-md' 
-                  : 'bg-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {godModeActive ? 'PÅ' : 'AV'}
-            </button>
+          {/* Scenario Balance Mode Selector */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700">
+            <span className="text-[10px] text-slate-400 font-bold uppercase px-1.5 hidden sm:inline">Scenario:</span>
+            {[
+              { id: 'BALANCED', label: '⚖️ Balansert (50/50)', tip: 'Begge sider har like stor sjanse til å vinne' },
+              { id: 'VIRUS_BREACH', label: '☣️ Red Team Seier', tip: 'Viruset bryter gjennom alle 4 lag' },
+              { id: 'DEFENSE_WIN', label: '🛡️ Blue Team Forsvar', tip: 'Brannmuren stopper angrepet' },
+              { id: 'GOD_MODE', label: '⚡ Gudemodus', tip: '100% ugjennomtrengelig skjold' },
+            ].map((scen) => (
+              <button
+                key={scen.id}
+                onClick={() => {
+                  setSimulationScenario(scen.id as typeof simulationScenario);
+                  setGodModeActive(scen.id === 'GOD_MODE');
+                }}
+                title={scen.tip}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                  simulationScenario === scen.id
+                    ? scen.id === 'VIRUS_BREACH'
+                      ? 'bg-rose-600 text-white shadow-md shadow-rose-950'
+                      : scen.id === 'DEFENSE_WIN'
+                      ? 'bg-cyan-600 text-white shadow-md shadow-cyan-950'
+                      : scen.id === 'GOD_MODE'
+                      ? 'bg-amber-500 text-slate-950 shadow-md'
+                      : 'bg-indigo-600 text-white shadow-md shadow-indigo-950'
+                    : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                }`}
+              >
+                {scen.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -818,6 +840,55 @@ export const FirewallFilmSimulator: React.FC<FirewallFilmSimulatorProps> = ({
             <span className="font-bold text-slate-200">{overallPenetrationDepth}%</span>
           </div>
         </div>
+
+        {/* Simulation Outcome Banner */}
+        {simulationStatus === 'BREACH_SUCCESS' && (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-rose-950 via-red-900/50 to-rose-950 border-2 border-rose-500 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-bounce">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">☣️</span>
+              <div>
+                <div className="text-sm font-extrabold text-rose-300 uppercase tracking-wider flex items-center gap-2">
+                  <span>RØDT LAG SEIER // FULL SYSTEMINNTRENGNING!</span>
+                  <span className="text-[10px] bg-rose-900/80 text-rose-200 px-2 py-0.5 rounded border border-rose-600">
+                    100% GJENNOMTRENGNING
+                  </span>
+                </div>
+                <div className="text-xs text-rose-200 mt-0.5">
+                  Viruset <span className="font-bold text-white">{virusName}</span> knakk alle 4 forsvarslag! Root-tilgang er oppnådd, kernel-minnet dumpet og kompromittering registrert.
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-rose-950 px-3 py-1.5 rounded-lg border border-rose-700 text-rose-300 font-bold">
+                +500 Poeng til Rødt Lag
+              </span>
+            </div>
+          </div>
+        )}
+
+        {simulationStatus === 'DEFENSE_WON' && (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950 via-emerald-900/40 to-cyan-950 border-2 border-emerald-500 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🛡️</span>
+              <div>
+                <div className="text-sm font-extrabold text-emerald-300 uppercase tracking-wider flex items-center gap-2">
+                  <span>BLÅTT LAG SEIER // BRANNMUREN FORSVARTE SYSTEMET!</span>
+                  <span className="text-[10px] bg-emerald-900/80 text-emerald-200 px-2 py-0.5 rounded border border-emerald-600">
+                    ANGREP NØYTRALISERT
+                  </span>
+                </div>
+                <div className="text-xs text-emerald-200 mt-0.5">
+                  Angrepsvektoren ble stanset og isolert i sandboks-tarpit. 0 byte kompromittert, WORM-revisjonsspor forseglet!
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-700 text-emerald-300 font-bold">
+                +500 Poeng til Blått Lag
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* 4 Layers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">

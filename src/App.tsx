@@ -22,6 +22,9 @@ import WarRoomTopologyEditor from './components/WarRoomTopologyEditor';
 import { EthicalHackerAcademyModal } from './components/EthicalHackerAcademyModal';
 import { ThreatSearchModal } from './components/ThreatSearchModal';
 import { CyberTrainingWalkthroughModal } from './components/CyberTrainingWalkthroughModal';
+import { SystemHealthDashboard } from './components/SystemHealthDashboard';
+import { HackerNotesModal } from './components/HackerNotesModal';
+import { CyberGuideAdvisorModal } from './components/CyberGuideAdvisorModal';
 
 import { 
   SystemStats, 
@@ -79,6 +82,9 @@ export function App() {
   const [isHackerAcademyOpen, setIsHackerAcademyOpen] = useState<boolean>(false);
   const [isThreatSearchOpen, setIsThreatSearchOpen] = useState<boolean>(false);
   const [isTrainingModalOpen, setIsTrainingModalOpen] = useState<boolean>(false);
+  const [isHackerNotesOpen, setIsHackerNotesOpen] = useState<boolean>(false);
+  const [isGuideAdvisorOpen, setIsGuideAdvisorOpen] = useState<boolean>(false);
+  const [guideInitialTopic, setGuideInitialTopic] = useState<string>('quickstart');
 
   // System Stats
   const [stats, setStats] = useState<SystemStats>({
@@ -742,6 +748,11 @@ export function App() {
         onOpenAcademy={() => setIsHackerAcademyOpen(true)}
         onOpenThreatSearch={() => setIsThreatSearchOpen(true)}
         onOpenTraining={() => setIsTrainingModalOpen(true)}
+        onOpenNotes={() => setIsHackerNotesOpen(true)}
+        onOpenGuide={(topic) => {
+          setGuideInitialTopic(topic || 'quickstart');
+          setIsGuideAdvisorOpen(true);
+        }}
       />
 
       {/* Main Content Area */}
@@ -856,6 +867,18 @@ export function App() {
 
         {activeTab === 'entropy' && <EntropyEngine />}
 
+        {activeTab === 'health' && (
+          <SystemHealthDashboard
+            stats={stats}
+            onSelectTab={setActiveTab}
+            onOpenNotes={() => setIsHackerNotesOpen(true)}
+            onOpenGuide={(topic) => {
+              setGuideInitialTopic(topic || 'systemhealth');
+              setIsGuideAdvisorOpen(true);
+            }}
+          />
+        )}
+
         {activeTab === 'python' && <PythonScriptViewer />}
 
         {/* Live Watchdog Console Stream (Always visible at bottom of dashboard) */}
@@ -908,6 +931,50 @@ export function App() {
         isOpen={isTrainingModalOpen}
         onClose={() => setIsTrainingModalOpen(false)}
       />
+
+      {/* Etiske Hacker Notater & SOC Feltjournal Modal */}
+      <HackerNotesModal
+        isOpen={isHackerNotesOpen}
+        onClose={() => setIsHackerNotesOpen(false)}
+        onOpenGuide={() => {
+          setGuideInitialTopic('hackernotes');
+          setIsGuideAdvisorOpen(true);
+        }}
+      />
+
+      {/* SOC Veileder & Cyberguide Interaktiv Hjelp Modal */}
+      <CyberGuideAdvisorModal
+        isOpen={isGuideAdvisorOpen}
+        onClose={() => setIsGuideAdvisorOpen(false)}
+        initialTopic={guideInitialTopic}
+        stats={stats}
+        onSelectTab={setActiveTab}
+        onOpenNotes={() => setIsHackerNotesOpen(true)}
+      />
+
+      {/* Floating Quick Advisor & Field Notes Speed-Dial Dock */}
+      <aside aria-label="Hurtigveileder og notater" className="fixed bottom-5 right-5 z-30 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-cyan-700/60 shadow-xl shadow-slate-950/80">
+        <button
+          onClick={() => {
+            setGuideInitialTopic('quickstart');
+            setIsGuideAdvisorOpen(true);
+          }}
+          title="Åpne SOC Veileder for god hjelp og forklaringer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-mono text-xs font-bold shadow-md transition-all cursor-pointer"
+        >
+          <span>🧭</span>
+          <span className="hidden sm:inline">Veileder</span>
+        </button>
+
+        <button
+          onClick={() => setIsHackerNotesOpen(true)}
+          title="Åpne Hacker Notater & Incident Journal"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-mono text-xs font-bold border border-amber-500/40 transition-all cursor-pointer"
+        >
+          <span>📝</span>
+          <span className="hidden sm:inline">Notater</span>
+        </button>
+      </aside>
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/80 py-4 text-center text-xs font-mono text-slate-500">
