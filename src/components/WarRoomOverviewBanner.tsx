@@ -12,7 +12,8 @@ import {
   Zap,
   Info,
   Film,
-  Download
+  Download,
+  Sliders
 } from 'lucide-react';
 
 export interface WarRoomOverviewBannerProps {
@@ -83,6 +84,15 @@ export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
       icon: FileText,
       desc: 'Genererer en offisiell hendelsesrapport til ledelse eller revisjon med grafer og samsvarskontroll.',
       actionLabel: 'Vis Rapport',
+    },
+    {
+      id: 'arms_race',
+      title: '6. Våpenkappløp & Balanse',
+      tag: 'Evolusjon & Spaker ⚖️',
+      color: 'border-pink-500/50 bg-pink-950/20 text-pink-300 hover:border-pink-400',
+      icon: Sliders,
+      desc: 'Skru opp/ned angrep og forsvar. Ingen vinner alltid. Spill 6 autentiske historiske cyberkrigs-scenarioer.',
+      actionLabel: 'Styr Balansen',
     },
   ];
 
@@ -156,9 +166,9 @@ export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
         </div>
       </div>
 
-      {/* 5 Pillars Grid */}
+      {/* 6 Pillars Grid */}
       {isExpanded && (
-        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 bg-slate-950/50">
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 bg-slate-950/50">
           {pillars.map((pillar) => {
             const isCurrent = activeTab === pillar.id;
             const Icon = pillar.icon;

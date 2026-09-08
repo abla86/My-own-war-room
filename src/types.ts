@@ -452,5 +452,58 @@ export interface SystemHealthState {
   uptimeSeconds: number;
 }
 
+export interface CyberScenarioStep {
+  stepNumber: number;
+  phaseName: string;
+  actor: 'red' | 'blue' | 'system';
+  title: string;
+  description: string;
+  terminalLog: string;
+  mitreTechnique?: string;
+  cveRef?: string;
+  visualEffect: 'laser' | 'breach' | 'shield' | 'quantum' | 'scada' | 'reboot' | 'isolate';
+  redPowerDelta?: number;
+  bluePowerDelta?: number;
+}
+
+export interface CyberRealScenario {
+  id: string;
+  title: string;
+  subtitle: string;
+  year: number;
+  targetSystem: string;
+  category: 'ICS_SCADA' | 'SUPPLY_CHAIN' | 'ZERO_CLICK_MOBILE' | 'CRITICAL_INFRA' | 'POST_QUANTUM' | 'KERNEL_RESILIENCE';
+  attackerProfile: string;
+  defenderProfile: string;
+  realWorldHistory: string;
+  baseAttackDifficulty: number; // 1-100
+  baseDefenseDifficulty: number; // 1-100
+  keyVulnerabilities: string[];
+  recommendedDefenses: string[];
+  steps: CyberScenarioStep[];
+  outcomeSummary: {
+    ifRedWins: string;
+    ifBlueWins: string;
+    ifEquilibrium: string;
+  };
+}
+
+export interface ArmsRaceState {
+  attackPower: number; // 10 to 200
+  defensePower: number; // 10 to 200
+  dynamicEquilibrium: boolean;
+  evolutionModeActive: boolean;
+  redEvolutionLevel: number;
+  redXp: number;
+  blueEvolutionLevel: number;
+  blueXp: number;
+  totalBattles: number;
+  redWins: number;
+  blueWins: number;
+  stalemates: number;
+  activeRedMutations: string[];
+  activeBlueMutations: string[];
+}
+
 
 

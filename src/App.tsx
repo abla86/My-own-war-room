@@ -31,6 +31,7 @@ import { AutomatedSocReportView } from './components/AutomatedSocReportView';
 import { GodModeMasterModal } from './components/GodModeMasterModal';
 import { CyberTutorialFilmModal } from './components/CyberTutorialFilmModal';
 import { downloadFullProjectZip } from './utils/projectZipExporter';
+import { CyberEvolutionWarfareEngine } from './components/CyberEvolutionWarfareEngine';
 
 import { 
   SystemStats, 
@@ -936,6 +937,15 @@ export function App() {
           />
         )}
 
+        {activeTab === 'arms_race' && (
+          <CyberEvolutionWarfareEngine
+            stats={stats}
+            onUpdateStats={setStats}
+            onTriggerAttackSample={(payload, ip) => processAttack(payload, ip, true)}
+            onSelectTab={setActiveTab}
+          />
+        )}
+
         {activeTab === 'godmode' && (
           <GodModeBattleArena
             stats={stats}
@@ -1131,6 +1141,19 @@ export function App() {
         >
           <span>⚔️</span>
           <span className="hidden md:inline">Arena</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('arms_race')}
+          title="Åpne Våpenkappløp & Balansematrise (Evolusjon & 6 Ekte Scenarioer)"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer shadow-md ${
+            activeTab === 'arms_race'
+              ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white ring-2 ring-pink-400'
+              : 'bg-slate-800 hover:bg-pink-950/60 text-pink-300 border border-pink-500/40'
+          }`}
+        >
+          <span>⚖️</span>
+          <span className="hidden md:inline">Balanse</span>
         </button>
 
         <button

@@ -30,7 +30,9 @@ import {
   FileText,
   Zap,
   Download,
-  Film
+  Film,
+  Sliders,
+  Scale
 } from 'lucide-react';
 import { SystemStats } from '../types';
 import { HackerIntelTooltip } from './HackerIntelTooltip';
@@ -97,6 +99,7 @@ export const Header: React.FC<HeaderProps> = ({
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
     { id: 'arena', label: 'Cyber Arena (Kamparena) ⚔️', short: 'Arena ⚔️', icon: Swords },
+    { id: 'arms_race', label: 'Våpenkappløp & Balansematrise (Evolusjon) ⚖️', short: 'Våpenkappløp ⚖️', icon: Sliders },
     { id: 'godmode', label: 'Gudemodus & Overherredømme ⚡', short: 'Gudemodus ⚡', icon: Crown },
     { id: 'report', label: 'Automatisert SOC Rapport 📑', short: 'Rapport 📑', icon: FileText },
     { id: 'health', label: 'Systemhelse & Diagnostikk (eBPF & Kjerne)', short: 'Systemhelse 🩺', icon: HeartPulse },
