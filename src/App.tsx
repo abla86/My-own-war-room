@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { RadarView } from './components/RadarView';
+import { ThreatTimeline } from './components/ThreatTimeline';
 import { ThreatMap } from './components/ThreatMap';
 import { AttackSimulator, ATTACK_VECTORS } from './components/AttackSimulator';
 import { getRegisteredAttackVectors } from './data/attackCatalog';
@@ -18,6 +19,7 @@ import WarRoomDashboardFull from './components/WarRoomDashboardFull';
 import WarRoomAttackBuilder, { WarRoomAttackInput } from './components/WarRoomAttackBuilder';
 import WarRoomDefenseConfigurator from './components/WarRoomDefenseConfigurator';
 import WarRoomTopologyEditor from './components/WarRoomTopologyEditor';
+import { EthicalHackerAcademyModal } from './components/EthicalHackerAcademyModal';
 
 import { 
   SystemStats, 
@@ -69,6 +71,10 @@ export function App() {
   // Export Modal state
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [exportModalInitialFormat, setExportModalInitialFormat] = useState<ExportFormat>('json');
+
+  // Ethical Hacker HUD & Academy states
+  const [hackerHudEnabled, setHackerHudEnabled] = useState<boolean>(true);
+  const [isHackerAcademyOpen, setIsHackerAcademyOpen] = useState<boolean>(false);
 
   // System Stats
   const [stats, setStats] = useState<SystemStats>({
@@ -727,24 +733,49 @@ export function App() {
         isSyncingDefinitions={isSyncingDefinitions}
         onOpenSyncModal={() => setIsSyncModalOpen(true)}
         onOpenExportModal={() => handleOpenExportModal('json')}
+        hackerHudEnabled={hackerHudEnabled}
+        onToggleHackerHud={() => setHackerHudEnabled((prev) => !prev)}
+        onOpenAcademy={() => setIsHackerAcademyOpen(true)}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
-        <SecurityEngineStatusPanel result={lastSecuritySimulation} defenses={securityDefenses} />
-        <WarRoomAttackBuilder
-          attack={warRoomAttack}
-          setAttack={setWarRoomAttack}
-          onRun={() => processAttack(warRoomAttack.payload, '198.51.100.10', false, warRoomAttack.vector)}
-        />
-        <WarRoomDefenseConfigurator defenses={securityDefenses} setDefenses={setSecurityDefenses} />
-        <WarRoomTopologyEditor
-          nodes={securityNodes}
-          edges={securityEdges}
-          setNodes={setSecurityNodes}
-          setEdges={setSecurityEdges}
-        />
-        <WarRoomDashboardFull sim={lastWarRoomSimulation} />
+        {/* War Room SecurityEngine & Topology Studio */}
+        {activeTab === 'warroom' && (
+          <div className="space-y-6">
+            <div className="p-4 rounded-xl bg-cyan-950/30 border border-cyan-800/60 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-mono font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+                  <span>🛡️</span> SecurityEngine Kjerne & Nettverkstopologi
+                </h2>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                  Full kontroll over noder, kanter, aktive forsvarsskjold og syntetisk angrepsgenerator.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsHackerAcademyOpen(true)}
+                className="px-3.5 py-1.5 rounded-lg bg-emerald-950 border border-emerald-600 hover:border-emerald-500 text-emerald-300 text-xs font-mono font-bold hover:bg-emerald-900 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+              >
+                <span>🎓</span> Åpne Hacker-Akademi
+              </button>
+            </div>
+            <SecurityEngineStatusPanel result={lastSecuritySimulation} defenses={securityDefenses} />
+            <WarRoomAttackBuilder
+              attack={warRoomAttack}
+              setAttack={setWarRoomAttack}
+              onRun={() => processAttack(warRoomAttack.payload, '198.51.100.10', false, warRoomAttack.vector)}
+            />
+            <WarRoomDefenseConfigurator defenses={securityDefenses} setDefenses={setSecurityDefenses} />
+            <WarRoomTopologyEditor
+              nodes={securityNodes}
+              edges={securityEdges}
+              setNodes={setSecurityNodes}
+              setEdges={setSecurityEdges}
+            />
+            <WarRoomDashboardFull sim={lastWarRoomSimulation} />
+          </div>
+        )}
+
         {/* Dynamic View by Tab */}
         {activeTab === 'radar' && (
           <RadarView
@@ -754,6 +785,16 @@ export function App() {
             onTriggerQuickProbe={(id) => handleFireAttack(id)}
             onSelectTab={setActiveTab}
             onRotateProgramKey={handleRotateProgramKey}
+            hackerHudEnabled={hackerHudEnabled}
+          />
+        )}
+
+        {activeTab === 'timeline' && (
+          <ThreatTimeline
+            stats={stats}
+            recentBlocks={chain}
+            onTriggerAttack={(id) => handleFireAttack(id)}
+            onSelectTab={setActiveTab}
           />
         )}
 
@@ -784,6 +825,7 @@ export function App() {
             onRunSequential={handleRunSequential}
             onRunStress={handleRunStress}
             isSimulating={isSimulating}
+            hackerHudEnabled={hackerHudEnabled}
           />
         )}
 
@@ -841,6 +883,12 @@ export function App() {
         syncProgress={syncProgress}
         syncStepText={syncStepText}
         onTriggerSync={handleSyncSecurityDefinitions}
+      />
+
+      {/* Ethical Hacker Academy & Arsenal Modal */}
+      <EthicalHackerAcademyModal
+        isOpen={isHackerAcademyOpen}
+        onClose={() => setIsHackerAcademyOpen(false)}
       />
 
       {/* Footer */}

@@ -37,6 +37,7 @@ import {
   exportAttackCatalogJson,
   importAttackCatalogJson
 } from '../data/attackCatalog';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 export const ATTACK_VECTORS: AttackVector[] = MASTER_ATTACK_CATALOG;
 
@@ -47,6 +48,7 @@ interface AttackSimulatorProps {
   onRunSequential: (selectedVectors?: AttackVector[]) => Promise<void>;
   onRunStress: (selectedVectors?: AttackVector[]) => Promise<void>;
   isSimulating: boolean;
+  hackerHudEnabled?: boolean;
 }
 
 type FilterCategoryType = 
@@ -68,6 +70,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
   onRunSequential,
   onRunStress,
   isSimulating,
+  hackerHudEnabled = false,
 }) => {
   // Master vector state with user extensions
   const [vectors, setVectors] = useState<AttackVector[]>(() => getRegisteredAttackVectors());
@@ -657,64 +660,115 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
           {/* Scenario 1: Swarm */}
-          <button
-            id="btn-scenario-swarm"
-            disabled={!simulatorEnabled || isSimulating || activeSelectedVectors.length === 0}
-            onClick={() => onRunSwarm(activeSelectedVectors)}
-            className="p-3.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-amber-500/60 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          <HackerIntelTooltip
+            customIntel={{
+              title: 'Attacker Swarm (Distribuert Vektorsverm)',
+              category: 'RED_TEAM',
+              level: 'INTERMEDIATE',
+              concept: 'Simulerer koordinert angrep fra et distribuert botnett med ulike samtidige angrepsvektorer.',
+              redTeamTactic: 'Roterer mellom spoofede IP-er og blander L4 volumangrep med L7 webapplikasjons-prober for å overbelaste IDS-analysen.',
+              blueTeamDefense: 'Automatisert rate-limiting, IP-reputasjonsfiltre og dynamisk honeypot-sinkholing av mistenkelige subnett.',
+              toolName: 'Mirai / Custom Python Swarm',
+              terminalCommand: 'python3 attack_swarm.py --targets 198.51.100.0/24 --threads 50',
+              mitreTactic: 'TA0001 - Initial Access / TA0040 - Impact',
+              proTip: 'Sverm-angrep avslører ofte flaskehalser i loggskriving (disk I/O) før selve nettverksbåndbredden mettes.'
+            }}
+            showIndicator={hackerHudEnabled}
+            className="w-full"
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5" /> 1. Attacker Swarm
-              </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">
-                {activeSelectedVectors.length} aktive vektorer
-              </span>
-            </div>
-            <p className="text-xs text-slate-300">
-              Sender en tilfeldig sverm av prober, CVE-utnyttelser og flom-angrep fra spoofede IP-adresser fra de {activeSelectedVectors.length} valgte vektorene.
-            </p>
-          </button>
+            <button
+              id="btn-scenario-swarm"
+              disabled={!simulatorEnabled || isSimulating || activeSelectedVectors.length === 0}
+              onClick={() => onRunSwarm(activeSelectedVectors)}
+              className="w-full p-3.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-amber-500/60 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5" /> 1. Attacker Swarm
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">
+                  {activeSelectedVectors.length} aktive vektorer
+                </span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Sender en tilfeldig sverm av prober, CVE-utnyttelser og flom-angrep fra spoofede IP-adresser fra de {activeSelectedVectors.length} valgte vektorene.
+              </p>
+            </button>
+          </HackerIntelTooltip>
 
           {/* Scenario 2: Sequential */}
-          <button
-            id="btn-scenario-sequential"
-            disabled={!simulatorEnabled || isSimulating || activeSelectedVectors.length === 0}
-            onClick={() => onRunSequential(activeSelectedVectors)}
-            className="p-3.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-cyan-500/60 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          <HackerIntelTooltip
+            customIntel={{
+              title: 'Sekvensiell Penetrasjonstest (Eskalering)',
+              category: 'RED_TEAM',
+              level: 'ADVANCED',
+              concept: 'Trinnvis test som simulerer en metodisk hacker som tester hver enkelt sårbarhet etter tur.',
+              redTeamTactic: 'Følger metodikken fra PTES (Penetration Testing Execution Standard) for å kartlegge alle eksponerte flater.',
+              blueTeamDefense: 'Korrelasjonsregler i SIEM som fanger opp at en enkelt kilde eller subnett utfører sekvensielle sonderinger.',
+              toolName: 'Metasploit Pro / Burp Intruder',
+              terminalCommand: 'msfconsole -r sequential_audit.rc',
+              mitreTactic: 'TA0007 - Discovery & Lateral Movement',
+              proTip: 'En tålmodig angriper sprer sonderingene utover dager ("low and slow") for å unngå terskelbaserte alarmer.'
+            }}
+            showIndicator={hackerHudEnabled}
+            className="w-full"
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-mono font-bold text-cyan-400 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5" /> 2. Sekvensiell Eskalering
-              </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
-                Nivå 1 → {activeSelectedVectors.length}
-              </span>
-            </div>
-            <p className="text-xs text-slate-300">
-              Kjører en streng penetrasjonstest gjennom alle dine {activeSelectedVectors.length} valgte angrepsvektorer i rekkefølge.
-            </p>
-          </button>
+            <button
+              id="btn-scenario-sequential"
+              disabled={!simulatorEnabled || isSimulating || activeSelectedVectors.length === 0}
+              onClick={() => onRunSequential(activeSelectedVectors)}
+              className="w-full p-3.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-cyan-500/60 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-mono font-bold text-cyan-400 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5" /> 2. Sekvensiell Eskalering
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+                  Nivå 1 → {activeSelectedVectors.length}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Kjører en streng penetrasjonstest gjennom alle dine {activeSelectedVectors.length} valgte angrepsvektorer i rekkefølge.
+              </p>
+            </button>
+          </HackerIntelTooltip>
 
           {/* Scenario 3: Stress */}
-          <button
-            id="btn-scenario-stress"
-            disabled={!simulatorEnabled || isSimulating || activeSelectedVectors.length === 0}
-            onClick={() => onRunStress(activeSelectedVectors)}
-            className="p-3.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-purple-500/60 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          <HackerIntelTooltip
+            customIntel={{
+              title: 'Entropi- & Flom-Stresstest',
+              category: 'RED_TEAM',
+              level: 'PRO',
+              concept: 'Høyvolum stresstest for å verifisere at systemet ikke knekker eller slutter å logge under ekstrem belastning.',
+              redTeamTactic: 'Genererer 18 samtidige trusselstrømmer med høy entropi for å fylle CPU-køer og minnebuffere.',
+              blueTeamDefense: 'Asynkron SQLite WAL (Write-Ahead Logging), ring-buffere og kernel-level pakkeslipp (eBPF / XDP).',
+              toolName: 'T-Rex / Scapy / Locust',
+              terminalCommand: 'locust -f stress_test.py --headless -u 1000 -r 100',
+              mitreTactic: 'T1499 - Endpoint Denial of Service',
+              proTip: 'Fail-secure prinsippet: Hvis sikkerhetssystemet krasjer under last, må det stenge lukene – aldri åpne opp!'
+            }}
+            showIndicator={hackerHudEnabled}
+            className="w-full"
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-mono font-bold text-purple-400 flex items-center gap-1.5">
-                <Terminal className="w-3.5 h-3.5" /> 3. Entropi- & Flom-Stresstest
-              </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">
-                Massiv Flom
-              </span>
-            </div>
-            <p className="text-xs text-slate-300">
-              Fyrer 18 samtidige trusselstrømmer for å stressteste både Shannon Entropi og volumetrisk DDoS-filtrering.
-            </p>
-          </button>
+            <button
+              id="btn-scenario-stress"
+              disabled={!simulatorEnabled || isSimulating || activeSelectedVectors.length === 0}
+              onClick={() => onRunStress(activeSelectedVectors)}
+              className="w-full p-3.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-purple-500/60 text-left transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-mono font-bold text-purple-400 flex items-center gap-1.5">
+                  <Terminal className="w-3.5 h-3.5" /> 3. Entropi- & Flom-Stresstest
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">
+                  Massiv Flom
+                </span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Fyrer 18 samtidige trusselstrømmer for å stressteste både Shannon Entropi og volumetrisk DDoS-filtrering.
+              </p>
+            </button>
+          </HackerIntelTooltip>
         </div>
 
         {activeSelectedVectors.length === 0 && (
@@ -894,19 +948,34 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
                     {isSelected ? 'Velg vekk' : 'Velg'}
                   </button>
 
-                  <button
-                    id={`btn-fire-vector-${vector.id}`}
-                    disabled={!simulatorEnabled || isSimulating}
-                    onClick={() => onFireAttack(vector.id)}
-                    className={`flex-1 py-1.5 px-3 rounded text-xs font-mono flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer ${
-                      isDdos
-                        ? 'bg-rose-950 hover:bg-rose-900/80 text-rose-300 border border-rose-800'
-                        : 'bg-cyan-950 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-800'
-                    }`}
+                  <HackerIntelTooltip
+                    customIntel={{
+                      title: `${vector.name} ${vector.cve ? `(${vector.cve})` : vector.mitreId ? `(${vector.mitreId})` : ''}`,
+                      category: isDdos ? 'RED_TEAM' : 'RED_TEAM',
+                      level: vector.severity === 'CRITICAL' ? 'PRO' : 'INTERMEDIATE',
+                      concept: vector.description,
+                      redTeamTactic: `Tester utnyttelse via ${vector.protocol || 'TCP/IP'}. Nyttelast: ${typeof vector.payload === 'string' ? vector.payload.slice(0, 60) : 'JSON payload'}.`,
+                      blueTeamDefense: `Mottiltak: ${vector.defaultCountermeasure || 'Autonom isolasjon & signatur-matching'}.`,
+                      mitreTactic: vector.mitreId ? `MITRE ATT&CK: ${vector.mitreId}` : undefined,
+                      proTip: 'Etiske hackere sjekker alltid om angrepet trigger WAF/IDS-alarmer eller logges i SIEM.'
+                    }}
+                    showIndicator={hackerHudEnabled}
+                    className="flex-1"
                   >
-                    <Play className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                    <span>Avfyr #{vector.id}</span>
-                  </button>
+                    <button
+                      id={`btn-fire-vector-${vector.id}`}
+                      disabled={!simulatorEnabled || isSimulating}
+                      onClick={() => onFireAttack(vector.id)}
+                      className={`w-full py-1.5 px-3 rounded text-xs font-mono flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer ${
+                        isDdos
+                          ? 'bg-rose-950 hover:bg-rose-900/80 text-rose-300 border border-rose-800'
+                          : 'bg-cyan-950 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-800'
+                      }`}
+                    >
+                      <Play className="w-3 h-3 group-hover:scale-110 transition-transform" />
+                      <span>Avfyr #{vector.id}</span>
+                    </button>
+                  </HackerIntelTooltip>
 
                   {vector.isCustomUserVector && (
                     <button

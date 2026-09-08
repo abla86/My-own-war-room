@@ -789,7 +789,7 @@ export function importAttackCatalogJson(jsonString: string): { success: boolean;
 
     for (const item of importedList) {
       if (item.name && item.category && item.payload) {
-        const newId = item.id && item.id > 100 ? item.id : Date.now() + Math.floor(Math.random() * 1000);
+        const newId = item.id && Number(item.id) > 100 ? item.id : Date.now() + Math.floor(Math.random() * 1000);
         merged.push({
           ...item,
           id: newId,

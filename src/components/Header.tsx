@@ -19,9 +19,13 @@ import {
   Terminal,
   KeyRound,
   Crown,
-  Swords
+  Swords,
+  TrendingUp,
+  Lightbulb,
+  GraduationCap
 } from 'lucide-react';
 import { SystemStats } from '../types';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 interface HeaderProps {
   stats: SystemStats;
@@ -36,6 +40,9 @@ interface HeaderProps {
   isSyncingDefinitions: boolean;
   onOpenSyncModal: () => void;
   onOpenExportModal: () => void;
+  hackerHudEnabled: boolean;
+  onToggleHackerHud: () => void;
+  onOpenAcademy: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -51,9 +58,14 @@ export const Header: React.FC<HeaderProps> = ({
   isSyncingDefinitions,
   onOpenSyncModal,
   onOpenExportModal,
+  hackerHudEnabled,
+  onToggleHackerHud,
+  onOpenAcademy,
 }) => {
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
+    { id: 'timeline', label: 'Threat Timeline (Recharts Sanntid)', short: 'Threat Timeline', icon: TrendingUp },
+    { id: 'warroom', label: 'SecurityEngine Kjerne & Topologi', short: 'Topologi & Motor', icon: Terminal },
     { id: 'map', label: 'Globalt Trusselkart (Verden)', short: 'Trusselkart', icon: Globe },
     { id: 'godmode', label: 'Gudemodus & Kamparena (Gladiator)', short: 'Gudemodus ⚡', icon: Crown },
     { id: 'simulator', label: 'Angrepssimulator (Matrise)', short: 'Simulator', icon: Activity },
@@ -78,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="text-slate-500 hidden sm:inline">|</span>
           <button
             onClick={onOpenSyncModal}
-            className="text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-1.5 font-mono group"
+            className="text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-1.5 font-mono group cursor-pointer"
             title="Klikk for å se detaljer om sikkerhetsdefinisjoner og feeds"
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 group-hover:rotate-12 transition-transform" />
@@ -90,17 +102,44 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5 font-mono text-slate-400">
-            {stats.integrityVerified ? (
-              <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-800/60">
-                <ShieldCheck className="w-3.5 h-3.5" /> WORM Hash: Intakt
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-rose-400 bg-rose-950/50 px-2 py-0.5 rounded border border-rose-800/60 animate-pulse">
-                <ShieldAlert className="w-3.5 h-3.5" /> Hash Manipulert!
-              </span>
-            )}
-          </div>
+          <HackerIntelTooltip intelId="worm_integrity" showIndicator={hackerHudEnabled}>
+            <div className="flex items-center gap-1.5 font-mono text-slate-400 cursor-help">
+              {stats.integrityVerified ? (
+                <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-800/60">
+                  <ShieldCheck className="w-3.5 h-3.5" /> WORM Hash: Intakt
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-rose-400 bg-rose-950/50 px-2 py-0.5 rounded border border-rose-800/60 animate-pulse">
+                  <ShieldAlert className="w-3.5 h-3.5" /> Hash Manipulert!
+                </span>
+              )}
+            </div>
+          </HackerIntelTooltip>
+
+          {/* Quick Ethical Hacker Academy & HUD Trigger */}
+          <button
+            id="btn-open-hacker-academy"
+            onClick={onOpenAcademy}
+            title="Åpne Etisk Superhacker Akademi, verktøyoversikt og MITRE ATT&CK kart"
+            className="inline-flex items-center gap-1.5 bg-gradient-to-r from-cyan-950 to-slate-900 hover:from-cyan-900 hover:to-slate-800 text-cyan-300 px-2.5 py-1 rounded-md border border-cyan-600/70 font-mono text-xs font-bold transition-all shadow-sm shadow-cyan-950 cursor-pointer"
+          >
+            <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
+            <span>🎓 Hacker-Akademi</span>
+          </button>
+
+          <button
+            id="btn-toggle-hacker-hud"
+            onClick={onToggleHackerHud}
+            title="Slå på/av Etisk Hacker Intel HUD-indikatorer på knapper og kontroller"
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded border font-mono text-xs transition-all cursor-pointer ${
+              hackerHudEnabled
+                ? 'bg-cyan-950 text-cyan-300 border-cyan-500 shadow-sm shadow-cyan-900'
+                : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200'
+            }`}
+          >
+            <Lightbulb className={`w-3.5 h-3.5 ${hackerHudEnabled ? 'text-cyan-400 animate-pulse' : ''}`} />
+            <span>HUD: <strong>{hackerHudEnabled ? 'PÅ' : 'AV'}</strong></span>
+          </button>
 
           <div className="flex items-center gap-1.5">
             {/* Quick Export Trigger */}
@@ -108,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="btn-header-export"
               onClick={onOpenExportModal}
               title="Eksporter forensisk rapport i 8 ulike formater"
-              className="inline-flex items-center gap-1 text-slate-300 hover:text-slate-100 bg-slate-900 hover:bg-slate-800 px-2 py-1 rounded border border-slate-700 font-mono text-xs transition-colors"
+              className="inline-flex items-center gap-1 text-slate-300 hover:text-slate-100 bg-slate-900 hover:bg-slate-800 px-2 py-1 rounded border border-slate-700 font-mono text-xs transition-colors cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden sm:inline">Eksport</span>
@@ -118,14 +157,14 @@ export const Header: React.FC<HeaderProps> = ({
               id="btn-toggle-sound"
               onClick={onToggleSound}
               title={soundEnabled ? 'Slå av lyd' : 'Slå på lyd'}
-              className="p-1.5 rounded hover:bg-slate-800/80 text-slate-400 hover:text-cyan-300 transition-colors"
+              className="p-1.5 rounded hover:bg-slate-800/80 text-slate-400 hover:text-cyan-300 transition-colors cursor-pointer"
             >
               {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
             </button>
             <button
               id="btn-emergency-lockdown"
               onClick={onEmergencyLockdown}
-              className="inline-flex items-center gap-1 text-rose-300 hover:text-rose-100 bg-rose-950/40 hover:bg-rose-900/60 px-2 py-1 rounded border border-rose-800/60 font-mono text-xs transition-colors"
+              className="inline-flex items-center gap-1 text-rose-300 hover:text-rose-100 bg-rose-950/40 hover:bg-rose-900/60 px-2 py-1 rounded border border-rose-800/60 font-mono text-xs transition-colors cursor-pointer"
             >
               <Lock className="w-3.5 h-3.5 text-rose-400" /> Nødlås
             </button>

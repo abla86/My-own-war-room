@@ -19,8 +19,10 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { SystemStats, RadarBlip, ForensicBlock } from '../types';
+import { ThreatTimeline } from './ThreatTimeline';
 import { RadarTimelineChart } from './RadarTimelineChart';
 import { SecurityLayersPanel } from './SecurityLayersPanel';
+import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 interface RadarViewProps {
   stats: SystemStats;
@@ -29,6 +31,7 @@ interface RadarViewProps {
   onTriggerQuickProbe: (typeId: number) => void;
   onSelectTab: (tabId: string) => void;
   onRotateProgramKey?: () => Promise<void>;
+  hackerHudEnabled?: boolean;
 }
 
 export const RadarView: React.FC<RadarViewProps> = ({
@@ -38,6 +41,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
   onTriggerQuickProbe,
   onSelectTab,
   onRotateProgramKey = async () => {},
+  hackerHudEnabled = false,
 }) => {
   const [selectedBlip, setSelectedBlip] = useState<RadarBlip | null>(null);
   const [radarAngle, setRadarAngle] = useState<number>(0);
@@ -55,60 +59,71 @@ export const RadarView: React.FC<RadarViewProps> = ({
 
   return (
     <div id="radar-view-container" className="space-y-6">
-      {/* Top Metric Cards */}
+      {/* Top Metric Cards with Ethical Hacker Intel Tooltips */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div id="metric-threats-blocked" className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-mono uppercase tracking-wider">Trusler Nøytralisert</span>
-            <ShieldAlert className="w-4 h-4 text-emerald-400" />
+        <HackerIntelTooltip intelId="threats_blocked" showIndicator={hackerHudEnabled} className="w-full">
+          <div id="metric-threats-blocked" className="w-full bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden cursor-help hover:border-cyan-700/60 transition-colors">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-xs font-mono uppercase tracking-wider">Trusler Nøytralisert</span>
+              <ShieldAlert className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-2xl font-bold font-mono text-emerald-400">{stats.totalThreatsBlocked}</div>
+            <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 100% autonom suksessrate
+            </p>
           </div>
-          <div className="text-2xl font-bold font-mono text-emerald-400">{stats.totalThreatsBlocked}</div>
-          <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 100% autonom suksessrate
-          </p>
-        </div>
+        </HackerIntelTooltip>
 
-        <div id="metric-honeypot-trapped" className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-mono uppercase tracking-wider">Fanget i Honeypot</span>
-            <Flame className="w-4 h-4 text-amber-400" />
+        <HackerIntelTooltip intelId="honeypot_trapped" showIndicator={hackerHudEnabled} className="w-full">
+          <div id="metric-honeypot-trapped" className="w-full bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden cursor-help hover:border-amber-700/60 transition-colors">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-xs font-mono uppercase tracking-wider">Fanget i Honeypot</span>
+              <Flame className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="text-2xl font-bold font-mono text-amber-400">{stats.honeypotTrappedCount}</div>
+            <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span> Sinkhole & Sandboks aktiv
+            </p>
           </div>
-          <div className="text-2xl font-bold font-mono text-amber-400">{stats.honeypotTrappedCount}</div>
-          <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span> Sinkhole & Sandboks aktiv
-          </p>
-        </div>
+        </HackerIntelTooltip>
 
-        <div id="metric-programdata-crypto" className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-mono uppercase tracking-wider">ProgramData Kryptering</span>
-            <Lock className="w-4 h-4 text-cyan-400" />
+        <HackerIntelTooltip intelId="programdata_crypto" showIndicator={hackerHudEnabled} className="w-full">
+          <div id="metric-programdata-crypto" className="w-full bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden cursor-help hover:border-cyan-700/60 transition-colors">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-xs font-mono uppercase tracking-wider">ProgramData Kryptering</span>
+              <Lock className="w-4 h-4 text-cyan-400" />
+            </div>
+            <div className="text-2xl font-bold font-mono text-cyan-300">
+              {stats.encryption?.programData?.algorithm || 'AES-256-GCM'}
+            </div>
+            <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-500"></span> Heap & Minne-buffer sikret
+            </p>
           </div>
-          <div className="text-2xl font-bold font-mono text-cyan-300">
-            {stats.encryption?.programData?.algorithm || 'AES-256-GCM'}
-          </div>
-          <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-cyan-500"></span> Heap & Minne-buffer sikret
-          </p>
-        </div>
+        </HackerIntelTooltip>
 
-        <div id="metric-outdata-crypto" className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="text-xs font-mono uppercase tracking-wider">OutData Egress Shield</span>
-            <Send className="w-4 h-4 text-purple-400" />
+        <HackerIntelTooltip intelId="outdata_crypto" showIndicator={hackerHudEnabled} className="w-full">
+          <div id="metric-outdata-crypto" className="w-full bg-slate-900/80 border border-slate-800 p-3.5 rounded-lg backdrop-blur-sm relative overflow-hidden cursor-help hover:border-purple-700/60 transition-colors">
+            <div className="flex items-center justify-between text-slate-400 mb-1">
+              <span className="text-xs font-mono uppercase tracking-wider">OutData Egress Shield</span>
+              <Send className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="text-2xl font-bold font-mono text-purple-300">
+              {stats.encryption?.outData?.encryptedPacketsCount || 4890} <span className="text-sm text-slate-400 font-normal">pkts</span>
+            </div>
+            <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-purple-500"></span> Kyber-1024 + TLS 1.3
+            </p>
           </div>
-          <div className="text-2xl font-bold font-mono text-purple-300">
-            {stats.encryption?.outData?.encryptedPacketsCount || 4890} <span className="text-sm text-slate-400 font-normal">pkts</span>
-          </div>
-          <p className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-purple-500"></span> Kyber-1024 + TLS 1.3
-          </p>
-        </div>
+        </HackerIntelTooltip>
       </div>
 
-      {/* Recharts Timeline Chart: totalThreatsBlocked over last 60 minutes */}
-      <RadarTimelineChart
+      {/* Recharts Threat Timeline: Real-time attack frequency over time based on threatHistory60Min */}
+      <ThreatTimeline
         stats={stats}
+        recentBlocks={recentBlocks}
+        onTriggerAttack={onTriggerQuickProbe}
+        onSelectTab={onSelectTab}
         onOpenLayersModal={() => setShowLayersModal(true)}
       />
 
@@ -268,41 +283,47 @@ export const RadarView: React.FC<RadarViewProps> = ({
               </button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <button
-                id="btn-quick-sqli"
-                onClick={() => onTriggerQuickProbe(2)}
-                className="p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 text-left font-mono text-xs transition-colors group"
-              >
-                <div className="text-cyan-400 font-semibold flex items-center justify-between">
-                  <span>SQLi Datatyveri</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-cyan-300">#2</span>
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Mirror Jamming test</div>
-              </button>
+              <HackerIntelTooltip intelId="sql_injection" showIndicator={hackerHudEnabled} className="w-full">
+                <button
+                  id="btn-quick-sqli"
+                  onClick={() => onTriggerQuickProbe(2)}
+                  className="w-full p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 text-left font-mono text-xs transition-colors group cursor-pointer"
+                >
+                  <div className="text-cyan-400 font-semibold flex items-center justify-between">
+                    <span>SQLi Datatyveri</span>
+                    <span className="text-[10px] text-slate-500 group-hover:text-cyan-300">#2</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 truncate">Mirror Jamming test</div>
+                </button>
+              </HackerIntelTooltip>
 
-              <button
-                id="btn-quick-rce"
-                onClick={() => onTriggerQuickProbe(3)}
-                className="p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-rose-500/50 text-left font-mono text-xs transition-colors group"
-              >
-                <div className="text-rose-400 font-semibold flex items-center justify-between">
-                  <span>Skadevare RCE</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-rose-300">#3</span>
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Blackout Isolation</div>
-              </button>
+              <HackerIntelTooltip intelId="reverse_shell" showIndicator={hackerHudEnabled} className="w-full">
+                <button
+                  id="btn-quick-rce"
+                  onClick={() => onTriggerQuickProbe(3)}
+                  className="w-full p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-rose-500/50 text-left font-mono text-xs transition-colors group cursor-pointer"
+                >
+                  <div className="text-rose-400 font-semibold flex items-center justify-between">
+                    <span>Skadevare RCE</span>
+                    <span className="text-[10px] text-slate-500 group-hover:text-rose-300">#3</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 truncate">Blackout Isolation</div>
+                </button>
+              </HackerIntelTooltip>
 
-              <button
-                id="btn-quick-zeroday"
-                onClick={() => onTriggerQuickProbe(5)}
-                className="p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-purple-500/50 text-left font-mono text-xs transition-colors group col-span-2 sm:col-span-1"
-              >
-                <div className="text-purple-400 font-semibold flex items-center justify-between">
-                  <span>Zero-Day Obfuskert</span>
-                  <span className="text-[10px] text-slate-500 group-hover:text-purple-300">#5</span>
-                </div>
-                <div className="text-[10px] text-slate-400 mt-0.5 truncate">Entropi &gt; 5.20 loop</div>
-              </button>
+              <HackerIntelTooltip intelId="zero_day_rce" showIndicator={hackerHudEnabled} className="w-full col-span-2 sm:col-span-1">
+                <button
+                  id="btn-quick-zeroday"
+                  onClick={() => onTriggerQuickProbe(5)}
+                  className="w-full p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-purple-500/50 text-left font-mono text-xs transition-colors group cursor-pointer"
+                >
+                  <div className="text-purple-400 font-semibold flex items-center justify-between">
+                    <span>Zero-Day Obfuskert</span>
+                    <span className="text-[10px] text-slate-500 group-hover:text-purple-300">#5</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 truncate">Entropi &gt; 5.20 loop</div>
+                </button>
+              </HackerIntelTooltip>
             </div>
           </div>
         </div>

@@ -272,7 +272,7 @@ export class SecurityEngine {
         nodeStateMap[targetNode.id] = 'infected';
         infectedNodeIds.add(targetNode.id);
         targetNode.status = 'infected';
-        targetNode.infectedByWormId = attack.id;
+        targetNode.infectedByWormId = String(attack.id);
 
         // Propagate to adjacent nodes based on attack strategy
         if (propagation.spreadsToTools) {
