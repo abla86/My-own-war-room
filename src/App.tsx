@@ -25,6 +25,7 @@ import { CyberTrainingWalkthroughModal } from './components/CyberTrainingWalkthr
 import { SystemHealthDashboard } from './components/SystemHealthDashboard';
 import { HackerNotesModal } from './components/HackerNotesModal';
 import { CyberGuideAdvisorModal } from './components/CyberGuideAdvisorModal';
+import { LiveIncidentAdvisor } from './components/LiveIncidentAdvisor';
 
 import { 
   SystemStats, 
@@ -85,6 +86,10 @@ export function App() {
   const [isHackerNotesOpen, setIsHackerNotesOpen] = useState<boolean>(false);
   const [isGuideAdvisorOpen, setIsGuideAdvisorOpen] = useState<boolean>(false);
   const [guideInitialTopic, setGuideInitialTopic] = useState<string>('quickstart');
+  const [isIncidentAdvisorOpen, setIsIncidentAdvisorOpen] = useState<boolean>(false);
+  const [isAutonomousActive, setIsAutonomousActive] = useState<boolean>(false);
+  const [autonomousCadenceSec, setAutonomousCadenceSec] = useState<number>(8);
+  const [autonomousBlockedCount, setAutonomousBlockedCount] = useState<number>(0);
 
   // System Stats
   const [stats, setStats] = useState<SystemStats>({
@@ -520,6 +525,24 @@ export function App() {
     [addLog, chain, groundedSources, securityNodes, securityEdges, securityDefenses]
   );
 
+  // Autonomous SOC Defense Loop
+  useEffect(() => {
+    if (!isAutonomousActive) return;
+
+    const timer = setInterval(() => {
+      const allVectors = getRegisteredAttackVectors();
+      if (allVectors.length === 0) return;
+      const randomVector = allVectors[Math.floor(Math.random() * allVectors.length)];
+      const randomIp = `194.26.${Math.floor(Math.random() * 200) + 10}.${Math.floor(Math.random() * 250) + 1}`;
+      
+      const payloadStr = typeof randomVector.payload === 'string' ? randomVector.payload : JSON.stringify(randomVector.payload);
+      processAttack(payloadStr, randomIp, false, randomVector.category);
+      setAutonomousBlockedCount((prev) => prev + 1);
+    }, autonomousCadenceSec * 1000);
+
+    return () => clearInterval(timer);
+  }, [isAutonomousActive, autonomousCadenceSec, processAttack]);
+
   // Attack simulator triggers
   const handleFireAttack = async (vectorId: number, customPayload?: string, customIp?: string) => {
     const allVectors = getRegisteredAttackVectors();
@@ -753,6 +776,9 @@ export function App() {
           setGuideInitialTopic(topic || 'quickstart');
           setIsGuideAdvisorOpen(true);
         }}
+        onOpenAdvisor={() => setIsIncidentAdvisorOpen(true)}
+        isAutonomousActive={isAutonomousActive}
+        autonomousBlockedCount={autonomousBlockedCount}
       />
 
       {/* Main Content Area */}
@@ -952,8 +978,42 @@ export function App() {
         onOpenNotes={() => setIsHackerNotesOpen(true)}
       />
 
+      {/* Sanntids Hendelser & Mottiltak Rådgiver (inkl. Autonom SOC) */}
+      <LiveIncidentAdvisor
+        isOpen={isIncidentAdvisorOpen}
+        onClose={() => setIsIncidentAdvisorOpen(false)}
+        stats={stats}
+        recentBlocks={chain}
+        onTriggerAttack={(payload, ip) => processAttack(payload, ip, true)}
+        onAddManualBan={handleAddManualBan}
+        onRotateKey={handleRotateProgramKey}
+        onOpenNotes={() => setIsHackerNotesOpen(true)}
+        onSelectTab={setActiveTab}
+        isAutonomousActive={isAutonomousActive}
+        onToggleAutonomous={setIsAutonomousActive}
+        autonomousCadenceSec={autonomousCadenceSec}
+        onChangeAutonomousCadence={setAutonomousCadenceSec}
+        autonomousBlockedCount={autonomousBlockedCount}
+      />
+
       {/* Floating Quick Advisor & Field Notes Speed-Dial Dock */}
       <aside aria-label="Hurtigveileder og notater" className="fixed bottom-5 right-5 z-30 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-cyan-700/60 shadow-xl shadow-slate-950/80">
+        <button
+          onClick={() => setIsIncidentAdvisorOpen(true)}
+          title="Åpne Sanntids Hendelser & Mottiltak (inkl. Autonom SOC Forsvarsmodus)"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer shadow-md ${
+            isAutonomousActive
+              ? 'bg-emerald-600 hover:bg-emerald-500 text-white animate-pulse'
+              : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white'
+          }`}
+        >
+          <span>⚡</span>
+          <span className="hidden sm:inline">Forslag & Tiltak</span>
+          {isAutonomousActive && (
+            <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+          )}
+        </button>
+
         <button
           onClick={() => {
             setGuideInitialTopic('quickstart');

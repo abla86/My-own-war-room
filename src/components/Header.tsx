@@ -27,7 +27,8 @@ import {
   Award,
   HeartPulse,
   BookOpen,
-  FileText
+  FileText,
+  Zap
 } from 'lucide-react';
 import { SystemStats } from '../types';
 import { HackerIntelTooltip } from './HackerIntelTooltip';
@@ -52,6 +53,9 @@ interface HeaderProps {
   onOpenTraining: () => void;
   onOpenNotes?: () => void;
   onOpenGuide?: (topic?: string) => void;
+  onOpenAdvisor?: () => void;
+  isAutonomousActive?: boolean;
+  autonomousBlockedCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -74,6 +78,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenTraining,
   onOpenNotes,
   onOpenGuide,
+  onOpenAdvisor,
+  isAutonomousActive,
+  autonomousBlockedCount,
 }) => {
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
@@ -175,6 +182,28 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
               <span>🧭 Veileder</span>
+            </button>
+          )}
+
+          {/* Live Incident & Countermeasures Copilot Trigger */}
+          {onOpenAdvisor && (
+            <button
+              id="btn-open-incident-advisor"
+              onClick={onOpenAdvisor}
+              title="Åpne Sanntids Hendelser & Mottiltak Rådgiver (inkl. Autonom SOC Forsvarsmodus)"
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                isAutonomousActive
+                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-500 shadow-emerald-950/50'
+                  : 'bg-gradient-to-r from-purple-950 to-indigo-950 hover:from-purple-900 hover:to-indigo-900 text-purple-200 border border-purple-500/80 shadow-purple-950/50'
+              }`}
+            >
+              <Zap className={`w-3.5 h-3.5 ${isAutonomousActive ? 'text-emerald-400 animate-bounce' : 'text-amber-400'}`} />
+              <span>⚡ Forslag & Tiltak</span>
+              {isAutonomousActive && (
+                <span className="text-[10px] px-1 py-0.2 bg-emerald-500 text-slate-950 font-black rounded-full">
+                  AUTONOM
+                </span>
+              )}
             </button>
           )}
 

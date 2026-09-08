@@ -1,6 +1,7 @@
 import { AttackVector } from '../types';
 import { OWASP_AUTOMATED_ATTACKS } from './owaspAutomatedThreatCatalog';
 import { AI_SECURITY_ATTACKS } from './aiSecurityAttackCatalog';
+import { FAMOUS_TROJANS_AND_THREATS_CATALOG } from './trojansAndFamousThreatsCatalog';
 
 /**
  * MASTER REGISTER OF KNOWN & REGISTERED CYBER ATTACK VECTORS
@@ -687,6 +688,7 @@ export const CORE_ATTACK_CATALOG: AttackVector[] = [
  */
 export const MASTER_ATTACK_CATALOG: AttackVector[] = [
   ...CORE_ATTACK_CATALOG,
+  ...FAMOUS_TROJANS_AND_THREATS_CATALOG,
   ...OWASP_AUTOMATED_ATTACKS,
   ...AI_SECURITY_ATTACKS,
 ].map((vector) => ({
