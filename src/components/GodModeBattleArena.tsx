@@ -580,7 +580,7 @@ export const INITIAL_CLASH_HISTORY: BattleClashRecord[] = [
       peakEntropy: 7.40,
       criticalHits: 3,
       decisiveExploit: 'Anti-Wiper Sandbox Tarpit',
-      countermeasureLearned: 'BLÅTT LAG SEIER: Destruktiv MBR-overskriving ble omdirigert til dummy sandboks-buffer.',
+      countermeasureLearned: 'BLÅTT LAG SEIER: Destruktiv MBR-overskriving ble omdirigert til isolert sandboks-buffer.',
       yaraRuleGenerated: 'rule Stux_Wiper_Isolated {\n  meta:\n    threat = "Stux-Wiper X"\n  condition:\n    raw_disk_write_attempt\n}',
       wormProofHash: '198cd44a002fe73998b1e4c7d00f2831',
     },

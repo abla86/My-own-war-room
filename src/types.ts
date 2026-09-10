@@ -82,6 +82,23 @@ export interface ThreatFeedSource {
   lastUpdated: string;
 }
 
+export interface SocAlertItem {
+  id: string;
+  targetTab: string; // 'radar' | 'arena' | 'arms_race' | 'godmode' | 'report' | 'health' | 'timeline' | 'warroom' | 'map' | 'simulator' | 'forensics' | 'blacklist' | 'entropy' | 'python';
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'INFO';
+  badgeText: string;
+  badgeColor: 'rose' | 'amber' | 'cyan' | 'purple' | 'emerald';
+  title: string;
+  description: string;
+  category: 'BREACH' | 'SECURITY_DEFINITIONS' | 'WORM_TAMPER' | 'KERNEL_HEALTH' | 'ARMS_RACE' | 'HONEYPOT' | 'POLICY';
+  timestamp: string;
+  requiresManualIntervention: boolean;
+  attackerIp?: string;
+  threatType?: string;
+  actionLabel?: string;
+  actionType?: 'RESOLVE_BREACH' | 'SYNC_DEFINITIONS' | 'QUARANTINE_IP' | 'ENGAGE_GODMODE' | 'VIEW_REPORT' | 'NAVIGATE' | 'DISMISS';
+}
+
 export interface SecurityDefinitions {
   version: string;
   lastSynced: string;

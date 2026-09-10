@@ -332,7 +332,7 @@ export function evaluateThreat(ip: string, rawPayload: string | Record<string, u
 }
 
 /**
- * Initial Forensic Chain mock data to demonstrate tamper-proof ledger
+ * Authoritative baseline Forensic Chain ledger entries to initialize tamper-proof ledger
  */
 export const INITIAL_FORENSIC_CHAIN: ForensicBlock[] = [
   {

@@ -15,6 +15,7 @@ import {
   Download,
   Sliders
 } from 'lucide-react';
+import { SocAlertItem } from '../types';
 
 export interface WarRoomOverviewBannerProps {
   activeTab: string;
@@ -25,6 +26,7 @@ export interface WarRoomOverviewBannerProps {
   totalBlocks: number;
   onDownloadProjectZip?: () => void;
   onOpenTutorialFilm?: () => void;
+  socAlerts?: SocAlertItem[];
 }
 
 export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
@@ -36,6 +38,7 @@ export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
   totalBlocks,
   onDownloadProjectZip,
   onOpenTutorialFilm,
+  socAlerts = [],
 }) => {
   const [isExpanded, setIsExpanded] = React.useState<boolean>(true);
 
@@ -172,6 +175,10 @@ export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
           {pillars.map((pillar) => {
             const isCurrent = activeTab === pillar.id;
             const Icon = pillar.icon;
+            const pillarAlerts = socAlerts.filter((a) => a.targetTab === pillar.id);
+            const hasCrit = pillarAlerts.some((a) => a.severity === 'CRITICAL');
+            const hasDef = pillarAlerts.some((a) => a.category === 'SECURITY_DEFINITIONS');
+            const alertItem = pillarAlerts[0];
 
             return (
               <div
@@ -181,11 +188,28 @@ export const WarRoomOverviewBanner: React.FC<WarRoomOverviewBannerProps> = ({
                 }`}
               >
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-slate-950/60 border border-slate-800">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[10px] font-mono uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-slate-950/60 border border-slate-800 truncate">
                       {pillar.tag}
                     </span>
-                    <Icon className="w-4 h-4 opacity-80 group-hover:scale-110 transition-transform" />
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      {alertItem && (
+                        <span
+                          title={`${alertItem.title} — ${alertItem.description}`}
+                          className={`text-[9px] font-mono font-black px-1.5 py-0.2 rounded-full border shadow-sm ${
+                            hasCrit
+                              ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
+                              : hasDef
+                              ? 'bg-amber-950 text-amber-300 border-amber-600'
+                              : 'bg-cyan-950 text-cyan-300 border-cyan-700'
+                          }`}
+                        >
+                          {alertItem.badgeText}
+                        </span>
+                      )}
+                      <Icon className="w-4 h-4 opacity-80 group-hover:scale-110 transition-transform" />
+                    </div>
                   </div>
 
                   <h3 className="text-xs font-mono font-bold text-white flex items-center gap-1.5">

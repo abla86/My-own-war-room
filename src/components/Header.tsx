@@ -34,7 +34,7 @@ import {
   Sliders,
   Scale
 } from 'lucide-react';
-import { SystemStats } from '../types';
+import { SystemStats, SocAlertItem } from '../types';
 import { HackerIntelTooltip } from './HackerIntelTooltip';
 
 interface HeaderProps {
@@ -65,6 +65,8 @@ interface HeaderProps {
   onOpenGodModeModal?: () => void;
   onDownloadProjectZip?: () => void;
   onOpenTutorialFilm?: () => void;
+  socAlerts?: SocAlertItem[];
+  onOpenSocAlertCenter?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -95,7 +97,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenGodModeModal,
   onDownloadProjectZip,
   onOpenTutorialFilm,
+  socAlerts = [],
+  onOpenSocAlertCenter,
 }) => {
+  const criticalAlertsCount = socAlerts.filter((a) => a.severity === 'CRITICAL').length;
+  const totalAlertsCount = socAlerts.length;
+
   const tabs = [
     { id: 'radar', label: 'Tactical Radar & Live View', short: 'Radar', icon: Radio },
     { id: 'arena', label: 'Cyber Arena (Kamparena) ⚔️', short: 'Arena ⚔️', icon: Swords },
@@ -153,6 +160,34 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
           </HackerIntelTooltip>
+
+          {/* Contextual SOC Alert Center Trigger */}
+          {onOpenSocAlertCenter && (
+            <button
+              id="btn-header-soc-alerts"
+              onClick={onOpenSocAlertCenter}
+              title="Åpne SOC Alert & Intervensjonssenter for sanntidsoversikt og manuell håndtering"
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs font-bold transition-all cursor-pointer shadow-sm ${
+                criticalAlertsCount > 0
+                  ? 'bg-gradient-to-r from-rose-950 via-rose-900 to-slate-900 text-rose-200 border border-rose-500 shadow-rose-950/80 animate-pulse'
+                  : totalAlertsCount > 0
+                  ? 'bg-gradient-to-r from-amber-950 via-slate-900 to-slate-950 text-amber-300 border border-amber-600/80 hover:bg-amber-900/50 shadow-amber-950/40'
+                  : 'bg-slate-900 text-slate-300 border border-slate-800 hover:bg-slate-800'
+              }`}
+            >
+              <ShieldAlert className={`w-3.5 h-3.5 ${criticalAlertsCount > 0 ? 'text-rose-400' : totalAlertsCount > 0 ? 'text-amber-400' : 'text-slate-400'}`} />
+              <span className="hidden sm:inline">SOC VARSLER:</span>
+              <span className={`px-1.5 py-0.2 rounded text-[10px] font-black ${
+                criticalAlertsCount > 0
+                  ? 'bg-rose-600 text-white animate-pulse'
+                  : totalAlertsCount > 0
+                  ? 'bg-amber-500 text-slate-950'
+                  : 'bg-slate-800 text-slate-400'
+              }`}>
+                {totalAlertsCount} {criticalAlertsCount > 0 ? 'PÅKREVD' : 'AKTIVE'}
+              </span>
+            </button>
+          )}
 
           {/* Threat Search & AI Threat Hunter */}
           <button
@@ -429,12 +464,17 @@ export const Header: React.FC<HeaderProps> = ({
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const Icon = tab.icon;
+          const tabAlerts = (socAlerts || []).filter((a) => a.targetTab === tab.id);
+          const hasCritical = tabAlerts.some((a) => a.severity === 'CRITICAL');
+          const hasDefSync = tabAlerts.some((a) => a.category === 'SECURITY_DEFINITIONS');
+          const primaryAlert = tabAlerts[0];
+
           return (
             <button
               key={tab.id}
               id={`tab-nav-${tab.id}`}
               onClick={() => onSelectTab(tab.id)}
-              className={`px-3.5 py-2 rounded-t text-xs font-mono font-medium transition-all whitespace-nowrap border-b-2 flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-t text-xs font-mono font-medium transition-all whitespace-nowrap border-b-2 flex items-center gap-1.5 relative ${
                 isActive
                   ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30'
                   : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
@@ -443,6 +483,32 @@ export const Header: React.FC<HeaderProps> = ({
               <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-cyan-400' : 'text-slate-500'}`} />
               <span className="hidden md:inline">{tab.label}</span>
               <span className="md:hidden">{tab.short}</span>
+
+              {/* Contextual SOC Alert Badge */}
+              {primaryAlert && (
+                <span
+                  title={`${primaryAlert.title} — ${primaryAlert.description}`}
+                  className={`ml-1 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-tight shadow-sm ${
+                    hasCritical
+                      ? 'bg-rose-950 text-rose-200 border border-rose-600 shadow-rose-950/80 animate-pulse ring-1 ring-rose-500/50'
+                      : hasDefSync
+                      ? 'bg-amber-950 text-amber-200 border border-amber-600 shadow-amber-950/80'
+                      : 'bg-cyan-950 text-cyan-200 border border-cyan-700'
+                  }`}
+                >
+                  {hasCritical ? (
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                    </span>
+                  ) : hasDefSync ? (
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  )}
+                  <span>{primaryAlert.badgeText}</span>
+                </span>
+              )}
             </button>
           );
         })}

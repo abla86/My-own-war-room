@@ -32,6 +32,8 @@ import { GodModeMasterModal } from './components/GodModeMasterModal';
 import { CyberTutorialFilmModal } from './components/CyberTutorialFilmModal';
 import { downloadFullProjectZip } from './utils/projectZipExporter';
 import { CyberEvolutionWarfareEngine } from './components/CyberEvolutionWarfareEngine';
+import { SocInterventionBanner } from './components/SocInterventionBanner';
+import { SocAlertCenterModal } from './components/SocAlertCenterModal';
 
 import { 
   SystemStats, 
@@ -41,7 +43,8 @@ import {
   RadarBlip,
   ExportFormat,
   GeoThreatNode,
-  AttackVector
+  AttackVector,
+  SocAlertItem
 } from './types';
 import { 
   evaluateThreat, 
@@ -99,6 +102,71 @@ export function App() {
   const [autonomousBlockedCount, setAutonomousBlockedCount] = useState<number>(0);
   const [isGodModeActive, setIsGodModeActive] = useState<boolean>(false);
   const [isGodModeModalOpen, setIsGodModeModalOpen] = useState<boolean>(false);
+
+  // Contextual SOC Alert & Intervention System State
+  const [isSocAlertCenterOpen, setIsSocAlertCenterOpen] = useState<boolean>(false);
+  const [socAlerts, setSocAlerts] = useState<SocAlertItem[]>([
+    {
+      id: 'alert-breach-initial',
+      targetTab: 'radar',
+      severity: 'CRITICAL',
+      badgeText: 'BREACH',
+      badgeColor: 'rose',
+      title: 'Kritisk Inntrengningsforsøk (Krever Manuell Kjerneisolering)',
+      description: 'Avvikende oppførsel: Uautorisert minnetilgang og lateral forflytning detektert mot kjerne-API. Kjerneisolering og IP-svartelisting kreves for å sikre systemet.',
+      category: 'BREACH',
+      timestamp: '08:44:12',
+      requiresManualIntervention: true,
+      attackerIp: '194.26.29.112',
+      threatType: 'Zero-Day Heap Memory Smuggle',
+      actionLabel: 'Iverksett Manuell Kjerneisolering',
+      actionType: 'QUARANTINE_IP',
+    },
+    {
+      id: 'alert-def-sync-initial',
+      targetTab: 'health',
+      severity: 'HIGH',
+      badgeText: 'DEF SYNC',
+      badgeColor: 'amber',
+      title: 'Sikkerhetsdefinisjoner Utdaterte (v2026.08.27)',
+      description: 'Nye eBPF-kjernefiltre, 84 YARA-regler og CVE-2026 signaturer er publisert av CISA AIS og CIRCL. Bør synkroniseres for å opprettholde 100% beskyttelse mot nye zero-days.',
+      category: 'SECURITY_DEFINITIONS',
+      timestamp: '08:30:00',
+      requiresManualIntervention: true,
+      actionLabel: 'Oppdater Definisjoner Nå (OTA Sync)',
+      actionType: 'SYNC_DEFINITIONS',
+    },
+    {
+      id: 'alert-blacklist-initial',
+      targetTab: 'blacklist',
+      severity: 'HIGH',
+      badgeText: '1 NY IP',
+      badgeColor: 'rose',
+      title: 'Ny Angriper-IP Venter På Svartelisteverifikasjon',
+      description: 'IP 185.220.101.5 genererte 14 blokkerte RCE-angrep. Karanteneregel krever verifisering.',
+      category: 'POLICY',
+      timestamp: '08:35:44',
+      requiresManualIntervention: false,
+      attackerIp: '185.220.101.5',
+      threatType: 'Skadevare / RCE',
+      actionLabel: 'Gå til Svarteliste',
+      actionType: 'NAVIGATE',
+    },
+    {
+      id: 'alert-report-initial',
+      targetTab: 'report',
+      severity: 'INFO',
+      badgeText: 'NY RAPPORT',
+      badgeColor: 'purple',
+      title: 'Urevidert SOC-Hendelseslogg',
+      description: 'Nye forensiske hendelser er registrert i WORM-kjeden og bør attesteres i den offisielle SOC-rapporten.',
+      category: 'POLICY',
+      timestamp: '08:40:00',
+      requiresManualIntervention: false,
+      actionLabel: 'Generer Rapport',
+      actionType: 'VIEW_REPORT',
+    }
+  ]);
 
   // System Stats
   const [stats, setStats] = useState<SystemStats>({
@@ -341,6 +409,9 @@ export function App() {
       playSyncSound();
       addLog('SUCCESS', `✅ Sikkerhetsdefinisjoner oppdatert: ${newVersion} (+1 420 signaturer, +84 YARA regler).`);
 
+      // Clear any active definition-update SOC alerts automatically
+      setSocAlerts((prev) => prev.filter((a) => a.category !== 'SECURITY_DEFINITIONS'));
+
       setTimeout(() => {
         setIsSyncingDefinitions(false);
         setSyncProgress(0);
@@ -538,6 +609,28 @@ export function App() {
         };
         return [newBlip, ...prevBlips.slice(0, 7)];
       });
+
+      // Contextual SOC Alert on Breach or Critical Exploit
+      if (isBreached || (!isGodModeActive && evaluation.riskLevel === 'CRITICAL')) {
+        const breachAlertId = `breach-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const alertItem: SocAlertItem = {
+          id: breachAlertId,
+          targetTab: 'radar',
+          severity: 'CRITICAL',
+          badgeText: 'BREACH',
+          badgeColor: 'rose',
+          title: `Kritisk Inntrengningsforsøk (${evaluation.threat})`,
+          description: `Avvikende aktivitet detektert fra ${attackerIp}. ${simulation.attack.name} krever umiddelbar manuell kjerneisolering og IP-karantene.`,
+          category: 'BREACH',
+          timestamp,
+          requiresManualIntervention: true,
+          attackerIp,
+          threatType: evaluation.threat,
+          actionLabel: 'Iverksett Manuell Kjerneisolering',
+          actionType: 'QUARANTINE_IP',
+        };
+        setSocAlerts((prev) => [alertItem, ...prev.filter((a) => a.attackerIp !== attackerIp)].slice(0, 20));
+      }
     },
     [addLog, chain, groundedSources, securityNodes, securityEdges, securityDefenses, isGodModeActive]
   );
@@ -599,8 +692,8 @@ export function App() {
     addLog('INFO', `🚀 Kjører sekvensiell test over ${pool.length} valgte angrepsvektorer...`);
 
     for (const vector of pool) {
-      const dummyIp = `103.225.17.${Math.floor(Math.random() * 250) + 1}`;
-      await processAttack(JSON.stringify(vector.payload), dummyIp, false, vector.category);
+      const simulatedAttackerIp = `103.225.17.${Math.floor(Math.random() * 250) + 1}`;
+      await processAttack(JSON.stringify(vector.payload), simulatedAttackerIp, false, vector.category);
       await new Promise((r) => setTimeout(r, 320));
     }
 
@@ -810,6 +903,118 @@ export function App() {
     addLog('SUCCESS', '✓ Full prosjekt-ZIP ble generert og lastet ned!');
   };
 
+  // SOC Alert Handlers
+  const handleResolveSocAlert = useCallback((alertId: string, actionType?: string) => {
+    setSocAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    addLog('INFO', `✓ SOC Varsel [${alertId}] ble kvittert ut og arkivert (${actionType || 'MANUELL'}).`);
+  }, [addLog]);
+
+  const handleResolveAllSocAlerts = useCallback(() => {
+    setSocAlerts([]);
+    addLog('SUCCESS', '✓ Alle aktive SOC-varsler ble kvittert ut og arkivert.');
+  }, [addLog]);
+
+  const handleQuarantineAttacker = useCallback(async (ip: string, reason: string) => {
+    // 1. Add to blacklist with CRITICAL severity
+    setBlacklist((prev) => {
+      const existing = prev.find((item) => item.ip === ip);
+      if (existing) {
+        return prev.map((item) => item.ip === ip ? { ...item, threatLevel: 'CRITICAL', attemptsBlocked: item.attemptsBlocked + 1 } : item);
+      }
+      return [
+        {
+          ip,
+          reason: `MANUELL SOC INTERVENSJON: ${reason}`,
+          blockedAt: new Date().toLocaleTimeString(),
+          threatLevel: 'CRITICAL',
+          attemptsBlocked: 1,
+          country: 'ISOLATED / QUARANTINED'
+        },
+        ...prev
+      ];
+    });
+
+    // 2. Add WORM block attestation
+    const lastBlock = chain[0];
+    const prevHash = lastBlock ? lastBlock.currentHash : '00000000000000000000000000000000';
+    const newId = chain.length + 1;
+    const now = new Date();
+    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    const blockContent = `${newId}|${timestamp}|${ip}|Manuell Kjerneisolering|Blackout Isolation|7.80|QUARANTINED_BY_OPERATOR|${prevHash}`;
+    const currentHash = await sha256(blockContent);
+
+    const newBlock: ForensicBlock = {
+      id: newId,
+      timestamp,
+      attackerIp: ip,
+      threatType: `SOC Intervensjon: ${reason}`,
+      threatLevel: 'CRITICAL',
+      payload: 'QUARANTINE_DIRECTIVE_ENFORCED',
+      entropy: 7.80,
+      counterMeasure: 'Blackout Isolation & Kjerne-Karantene',
+      counterMeasureCode: 'BLACKOUT_ISOLATION',
+      previousHash: prevHash,
+      currentHash,
+    };
+    setChain((prev) => [newBlock, ...prev]);
+
+    // 3. Clear alerts for this IP
+    setSocAlerts((prev) => prev.filter((a) => a.attackerIp !== ip));
+
+    // 4. Play audio & log
+    playCountermeasureSound('ISOLATED');
+    addLog('DANGER', `🛡️ MANUELL KJERNEISOLERING IVERKSATT: IP ${ip} er permanent utestengt og forseglet i WORM blokk #${newId}.`, ip);
+  }, [chain, addLog]);
+
+  const handleSimulateBreachAlert = useCallback(() => {
+    const simulatedIp = `185.220.${Math.floor(Math.random() * 200) + 10}.${Math.floor(Math.random() * 240) + 10}`;
+    const now = new Date();
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    
+    const newAlert: SocAlertItem = {
+      id: `sim-breach-${Date.now()}`,
+      targetTab: 'radar',
+      severity: 'CRITICAL',
+      badgeText: 'BREACH',
+      badgeColor: 'rose',
+      title: 'Simulert Kritisk Brudd (APT-29 Golden SAML Token Hijack)',
+      description: `Uautorisert minnetilgang detektert fra ${simulatedIp}. eBPF-kjernefilter flagget kompromittert sesjonsnøkkel. Krever manuell kjerneisolering og tokensanering.`,
+      category: 'BREACH',
+      timestamp: timeStr,
+      requiresManualIntervention: true,
+      attackerIp: simulatedIp,
+      threatType: 'APT-29 Golden SAML Forgery',
+      actionLabel: 'Iverksett Manuell Kjerneisolering',
+      actionType: 'QUARANTINE_IP',
+    };
+
+    setSocAlerts((prev) => [newAlert, ...prev]);
+    addLog('DANGER', `🚨 TEST/SIMULERING: Nytt kritisk brudd generert for IP ${simulatedIp}. Krever manuell intervensjon.`);
+  }, [addLog]);
+
+  const handleSimulateDefinitionsOutdated = useCallback(() => {
+    const now = new Date();
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+    
+    const newAlert: SocAlertItem = {
+      id: `sim-def-${Date.now()}`,
+      targetTab: 'health',
+      severity: 'HIGH',
+      badgeText: 'DEF SYNC',
+      badgeColor: 'amber',
+      title: 'Sikkerhetsdefinisjoner Krever Oppdatering (Nye Zero-Day Signaturer)',
+      description: 'CISA AIS og CIRCL har sluppet 1 420 nye signaturer for CVE-2026. Systemet kjører eldre signatursett v2026.08.27. Oppdatering kreves for å opprettholde 100% kjernebeskyttelse.',
+      category: 'SECURITY_DEFINITIONS',
+      timestamp: timeStr,
+      requiresManualIntervention: true,
+      actionLabel: 'Oppdater Definisjoner Nå (OTA Sync)',
+      actionType: 'SYNC_DEFINITIONS',
+    };
+
+    setSocAlerts((prev) => [newAlert, ...prev.filter((a) => a.category !== 'SECURITY_DEFINITIONS')]);
+    addLog('WARN', '⚠️ TEST/SIMULERING: Sikkerhetsdefinisjoner merket som utdaterte. SOC-varsel generert.');
+  }, [addLog]);
+
   return (
     <div id="wpww-app" className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
       {/* Top Header */}
@@ -844,6 +1049,8 @@ export function App() {
         onOpenGodModeModal={() => setIsGodModeModalOpen(true)}
         onDownloadProjectZip={handleDownloadProjectZip}
         onOpenTutorialFilm={() => setIsTutorialFilmOpen(true)}
+        socAlerts={socAlerts}
+        onOpenSocAlertCenter={() => setIsSocAlertCenterOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -858,6 +1065,18 @@ export function App() {
           totalBlocks={chain.length}
           onDownloadProjectZip={handleDownloadProjectZip}
           onOpenTutorialFilm={() => setIsTutorialFilmOpen(true)}
+          socAlerts={socAlerts}
+        />
+
+        {/* Contextual SOC Intervention Banner for active tab */}
+        <SocInterventionBanner
+          alerts={socAlerts}
+          currentTab={activeTab}
+          onResolveAlert={handleResolveSocAlert}
+          onSyncDefinitions={handleSyncSecurityDefinitions}
+          onQuarantineIp={handleQuarantineAttacker}
+          onActivateGodMode={handleToggleGodMode}
+          onOpenAlertCenter={() => setIsSocAlertCenterOpen(true)}
         />
         {/* War Room SecurityEngine & Topology Studio */}
         {activeTab === 'warroom' && (
@@ -1123,8 +1342,49 @@ export function App() {
         onNavigateToTab={(tab) => setActiveTab(tab)}
       />
 
+      {/* SOC Alert Center & Contextual Intervention Modal */}
+      <SocAlertCenterModal
+        isOpen={isSocAlertCenterOpen}
+        onClose={() => setIsSocAlertCenterOpen(false)}
+        alerts={socAlerts}
+        onResolveAlert={handleResolveSocAlert}
+        onResolveAllAlerts={handleResolveAllSocAlerts}
+        onSyncDefinitions={handleSyncSecurityDefinitions}
+        isSyncingDefinitions={isSyncingDefinitions}
+        onQuarantineIp={handleQuarantineAttacker}
+        onActivateGodMode={handleToggleGodMode}
+        isGodModeActive={isGodModeActive}
+        onSelectTab={setActiveTab}
+        onSimulateBreachAlert={handleSimulateBreachAlert}
+        onSimulateDefinitionsOutdated={handleSimulateDefinitionsOutdated}
+      />
+
       {/* Floating Quick Advisor & Field Notes Speed-Dial Dock */}
       <aside aria-label="Hurtigveileder og notater" className="fixed bottom-5 right-5 z-30 flex items-center gap-1.5 sm:gap-2 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-cyan-700/60 shadow-xl shadow-slate-950/80">
+        {/* SOC Alerts Quick Button */}
+        <button
+          id="btn-dock-soc-alerts"
+          onClick={() => setIsSocAlertCenterOpen(true)}
+          title="Åpne SOC Alert & Intervensjonssenter"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer shadow-md ${
+            socAlerts.some((a) => a.severity === 'CRITICAL')
+              ? 'bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white animate-pulse ring-2 ring-rose-400'
+              : socAlerts.length > 0
+              ? 'bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-500 hover:to-orange-600 text-white'
+              : 'bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700'
+          }`}
+        >
+          <span>🚨</span>
+          <span className="hidden md:inline">SOC Varsler</span>
+          <span className={`px-1 py-0.2 rounded text-[10px] font-black ${
+            socAlerts.some((a) => a.severity === 'CRITICAL')
+              ? 'bg-white text-rose-950'
+              : 'bg-slate-900 text-white'
+          }`}>
+            {socAlerts.length}
+          </span>
+        </button>
+
         <button
           onClick={() => setIsTutorialFilmOpen(true)}
           title="Se Opplæringsfilm & Masterclass for Cyber War-Roomet"
